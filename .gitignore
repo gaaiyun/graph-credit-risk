@@ -9,3 +9,4 @@ output/log_*.txt
 __pycache__/
 *.pyc
 .playwright-mcp/
+tools/layout/node_modules/

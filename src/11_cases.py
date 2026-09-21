@@ -159,6 +159,14 @@ if __name__ == "__main__":
             out_cases.append(c)
         if len(out_cases) >= 3:
             break
+    # 展示的分位与表 4 同口径：滚动外推样本外预测在当年的分位（挑选仍按单次切分测试期的分位提升，原值留在 *_split）
+    oot = pd.read_parquet(WORK / "oot_rolling.parquet")
+    for c in out_cases:
+        o = oot[oot.t == c["t"]]
+        for k, col in [("pct_m1", "M1 自身"), ("pct_m4", "M4 +结构位置")]:
+            q = o[col].rank(pct=True)[o.code == c["code"]]
+            if len(q):
+                c[k + "_split"], c[k] = c[k], float(q.iloc[0])
     for i, c in enumerate(out_cases):
         draw(c, FIG / f"fig7_case{i + 1}.png", public=False)
         print(f"case{i + 1}: {label('C:' + c['code'])} t={c['t']} 行业={c['industry']} M1分位={c['pct_m1']:.3f} M4分位={c['pct_m4']:.3f} "

@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>关联图谱全景</title>
+<meta name="description" content="经营类客户风控模型的逐年关联图谱（2016—2023，实名）：每家企业一个节点，可搜索定位、点击查看关联关系与二跳传导路径">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg stroke='%23454b54' stroke-width='2'%3E%3Cline x1='8' y1='9' x2='23' y2='12'/%3E%3Cline x1='8' y1='9' x2='12' y2='24'/%3E%3Cline x1='23' y1='12' x2='12' y2='24'/%3E%3C/g%3E%3Ccircle cx='8' cy='9' r='4' fill='%232a78d6'/%3E%3Ccircle cx='23' cy='12' r='4' fill='%231baf7a'/%3E%3Ccircle cx='12' cy='24' r='4.5' fill='%23d03b3b'/%3E%3C/svg%3E">
+<style>
+:root{color-scheme:light;
+  --paper:#f6f3ec;--paper-2:#eee8dc;--card:#fbf9f4;--ink:#1c1f23;--ink-2:#454b54;--muted:#7b8794;--rule:#d8d1c3;--rule-2:#e7e1d5;--accent:#c2410c;
+  --shadow:0 1px 0 rgba(28,31,35,.04),0 10px 30px -18px rgba(28,31,35,.3);
+  --serif:"Noto Serif SC","Songti SC","SimSun",serif;--sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --f0:#2a78d6;--f1:#1baf7a;--f2:#eda100;--f3:#bdb6a8;
+  --t0:#2a78d6;--t1:#1baf7a;--t2:#eb6834;--t3:#aaa497;
+  --crit:#d03b3b;--seri:#ec835a;
+  --n0:#5f656d;--n1:#b3ada1;--n2:#cdc7bb;--n3:#c3bdb1;--dim:#ebe6dc;--edge-a:.28;
+}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){color-scheme:dark;
+  --paper:#131518;--paper-2:#1a1d21;--card:#181b1f;--ink:#ebe6dc;--ink-2:#bdb7ab;--muted:#8b919a;--rule:#2c3036;--rule-2:#23272c;--accent:#f0773a;
+  --shadow:0 10px 30px -18px rgba(0,0,0,.7);
+  --f0:#3987e5;--f1:#199e70;--f2:#c98500;--f3:#4a4f57;
+  --t0:#3987e5;--t1:#199e70;--t2:#d95926;--t3:#5b6068;
+  --n0:#a9afb7;--n1:#555a62;--n2:#43484f;--n3:#4b5058;--dim:#1f2227;--edge-a:.34;}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --paper:#131518;--paper-2:#1a1d21;--card:#181b1f;--ink:#ebe6dc;--ink-2:#bdb7ab;--muted:#8b919a;--rule:#2c3036;--rule-2:#23272c;--accent:#f0773a;
+  --shadow:0 10px 30px -18px rgba(0,0,0,.7);
+  --f0:#3987e5;--f1:#199e70;--f2:#c98500;--f3:#4a4f57;
+  --t0:#3987e5;--t1:#199e70;--t2:#d95926;--t3:#5b6068;
+  --n0:#a9afb7;--n1:#555a62;--n2:#43484f;--n3:#4b5058;--dim:#1f2227;--edge-a:.34;}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--paper);color:var(--ink);font:14px/1.6 var(--sans);display:flex;flex-direction:column;overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+header.top{display:flex;align-items:center;gap:12px 16px;padding:10px 16px;border-bottom:1px solid var(--rule);background:var(--card);flex-wrap:wrap;position:relative;z-index:10}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand b{font-family:var(--serif);font-size:19px;font-weight:900;letter-spacing:.02em;white-space:nowrap}
+.brand span{font-size:12px;color:var(--muted);white-space:nowrap}
+.search{position:relative;flex:1 1 280px;max-width:480px}
+.search input{width:100%;padding:7px 14px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);outline:none}
+.search input:focus{border-color:var(--ink-2)}
+.sug{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);max-height:380px;overflow:auto;display:none}
+.sug.on{display:block}
+.sug .it{padding:7px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:1px solid var(--rule-2)}
+.sug .it:last-child{border-bottom:0}
+.sug .it.act,.sug .it:hover{background:var(--paper-2)}
+.sug .it small{color:var(--muted);white-space:nowrap;font-size:12px}
+.sug .it.off{opacity:.55}
+.sug .empty{padding:10px 12px;color:var(--muted);font-size:13px}
+.ctl{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2)}
+.ctl select{border:1px solid var(--rule);background:var(--paper);border-radius:8px;padding:4px 8px}
+.links{display:flex;gap:8px;margin-left:auto}
+.btn{border:1px solid var(--rule);background:var(--paper);border-radius:999px;padding:4px 12px;font-size:12.5px;cursor:pointer;text-decoration:none;color:var(--ink-2);white-space:nowrap}
+.btn:hover{border-color:var(--ink-2);color:var(--ink)}
+.btn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+main{flex:1;display:grid;grid-template-columns:268px minmax(0,1fr) 380px;min-height:0}
+aside{overflow:auto;padding:14px 16px 24px;background:var(--card)}
+aside.left{border-right:1px solid var(--rule)}
+aside.right{border-left:1px solid var(--rule)}
+aside h3{font-size:12px;letter-spacing:.08em;color:var(--muted);font-weight:500;margin:18px 0 8px}
+aside h3:first-child{margin-top:0}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{border:1px solid var(--rule-2);border-radius:10px;padding:7px 10px;background:var(--paper)}
+.stat .v{font-weight:700;font-size:17px;line-height:1.3}
+.stat .l{font-size:11.5px;color:var(--muted)}
+.seg{display:flex;border:1px solid var(--rule);border-radius:999px;overflow:hidden}
+.seg button{flex:1;border:0;background:transparent;padding:5px 8px;font-size:12.5px;cursor:pointer;color:var(--ink-2)}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.lg{list-style:none;margin:0;padding:0;font-size:13px}
+.lg li{display:flex;align-items:center;gap:8px;padding:3px 0}
+.lg li label{display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;min-width:0}
+.lg li .n{margin-left:auto;color:var(--muted);font-family:var(--mono);font-size:12px}
+.lg input{accent-color:var(--ink);margin:0}
+.sw{width:11px;height:11px;border-radius:50%;flex:none;display:inline-block}
+.ln{width:18px;height:3px;border-radius:2px;flex:none;display:inline-block}
+.note{font-size:12px;color:var(--muted);line-height:1.7}
+.note b{color:var(--ink-2);font-weight:600}
+#stage{position:relative;min-height:0;background:var(--paper);overflow:hidden}
+#sg{position:absolute;inset:0}
+#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;background:var(--paper);z-index:5}
+#loading.off{display:none}
+.zoom{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:6px;z-index:4}
+.zoom button{width:34px;height:34px;border-radius:10px;border:1px solid var(--rule);background:var(--card);cursor:pointer;font-size:16px;box-shadow:var(--shadow)}
+.hint{position:absolute;left:12px;bottom:12px;font-size:12px;color:var(--muted);background:color-mix(in srgb,var(--card) 85%,transparent);padding:4px 10px;border-radius:8px;z-index:4;pointer-events:none}
+.empty-detail{color:var(--muted);font-size:13.5px;line-height:1.8}
+.empty-detail b{color:var(--ink-2)}
+.dt h2{font-family:var(--serif);font-size:20px;line-height:1.35;margin:0 0 6px;font-weight:900;word-break:break-all}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tag{font-size:12px;border:1px solid var(--rule);border-radius:999px;padding:0 8px;color:var(--ink-2);background:var(--paper)}
+.status{display:flex;align-items:center;gap:8px;font-weight:600;margin:8px 0}
+.box{border:1px solid var(--rule-2);border-radius:10px;padding:9px 12px;background:var(--paper);margin:8px 0;font-size:13px}
+.box .row{display:flex;justify-content:space-between;gap:10px}
+.box .row span:first-child{color:var(--muted)}
+.box .row b{font-family:var(--mono);font-weight:600}
+.dt h4{font-size:13px;margin:16px 0 6px}
+.dt h4 small{color:var(--muted);font-weight:400;margin-left:6px}
+.nl{list-style:none;margin:0;padding:0;font-size:13px}
+.nl li{display:flex;align-items:baseline;gap:6px;padding:3px 0;border-bottom:1px dashed var(--rule-2)}
+.nl li:last-child{border-bottom:0}
+.nl a{color:var(--ink);cursor:pointer;text-decoration:none;border-bottom:1px solid var(--rule);min-width:0;overflow-wrap:anywhere}
+.nl a:hover{color:var(--accent);border-color:var(--accent)}
+.nl .meta{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap;padding-left:6px}
+.nl.two li{display:block}
+.nl.two .meta{display:block;white-space:normal;padding:0 0 0 14px;margin:0}
+.more{border:0;background:transparent;color:var(--accent);cursor:pointer;padding:4px 0;font-size:12.5px}
+.path{border:1px solid var(--rule-2);border-radius:10px;padding:7px 10px;margin:6px 0;cursor:pointer;font-size:12.5px;line-height:1.7;background:var(--paper)}
+.path:hover,.path.on{border-color:var(--ink-2)}
+.path a{color:var(--ink);font-weight:600;cursor:pointer}
+.path .r{color:var(--muted)}
+.mono{font-family:var(--mono)}
+@media (max-width:1100px){main{grid-template-columns:240px minmax(0,1fr) 320px}}
+@media (max-width:900px){
+  body{overflow:auto;height:auto;display:block}
+  main{display:flex;flex-direction:column}
+  #stage{height:64vh;order:1;flex:none}
+  aside.right{order:2;border-left:0;border-top:1px solid var(--rule)}
+  aside.left{order:3;border-right:0;border-top:1px solid var(--rule)}
+  .brand span{display:none}
+  .links{margin-left:0}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><b>关联图谱全景</b><span>经营类客户风控模型 · 逐年建模图谱 · 实名</span></div>
+  <div class="search">
+    <input id="q" type="search" autocomplete="off" placeholder="搜索企业全称、简称或股票代码，回车定位" aria-label="搜索企业">
+    <div class="sug" id="sug" role="listbox"></div>
+  </div>
+  <label class="ctl">年份 <select id="year" aria-label="观察年"></select></label>
+  <div class="links">
+    <a class="btn" href="https://gaaiyun.github.io/graph-credit-risk/" target="_blank" rel="noopener">分析报告</a>
+    <a class="btn" href="https://gaaiyun.github.io/graph-credit-risk/app.html" target="_blank" rel="noopener">产品原型</a>
+    <button class="btn" id="theme" type="button">深 / 浅</button>
+  </div>
+</header>
+<main>
+  <aside class="left">
+    <h3>本年图谱</h3>
+    <div class="stats" id="stats"></div>
+    <h3>节点着色</h3>
+    <div class="seg" id="mode"><button type="button" data-m="risk" class="on">风险状态</button><button type="button" data-m="type">主体类型</button></div>
+    <ul class="lg" id="nodeLegend" style="margin-top:8px"></ul>
+    <label class="lg" style="display:flex;gap:8px;align-items:center;margin-top:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="riskOnly"> 只显示出险与违约节点</label>
+    <h3>主体类型</h3>
+    <ul class="lg" id="typeFilter"></ul>
+    <h3>关系类型</h3>
+    <ul class="lg" id="famFilter"></ul>
+    <h3>说明</h3>
+    <p class="note">每个节点是一个主体（上市公司、非上市企业、自然人或机构），连线是该观察年建模图谱中的关系。坐标由 ForceAtlas2 在 2016—2023 年全部关系的并集图上计算，切换年份时节点位置不变。<br><b>出险</b>：决策日前 36 个月内作为被告被提起金融债务诉讼；经营欠款诉讼和违规处罚只在详情里列出（均按 12 个月半衰期加权）。<b>12 个月内违约</b>是事后结局：决策日（次年 4 月 30 日）后 12 个月内首次被提起金融债务诉讼，只对样本企业有定义。</p>
+  </aside>
+  <div id="stage">
+    <div id="sg"></div>
+    <div id="loading">正在载入图谱数据…</div>
+    <div class="hint" id="hint">滚轮缩放 · 拖动平移 · 点击节点查看详情</div>
+    <div class="zoom"><button type="button" id="zin" aria-label="放大">+</button><button type="button" id="zout" aria-label="缩小">−</button><button type="button" id="zreset" aria-label="重置视图">⟲</button></div>
+  </div>
+  <aside class="right" id="detail"></aside>
+</main>
+<script src="lib/graphology.umd.min.js"></script>
+<script src="lib/sigma.min.js"></script>
+<script>
+const META = __META__, YEARS = __YEARS__, BUILD = '__BUILD__', HINT = __HINT__;
+const VQ = location.protocol === 'file:' ? '' : `?v=${BUILD}`;
+const $ = s => document.querySelector(s);
+const REL = ['sup', 'cus', 'holder', 'invest', 'ctrl', 'person', 'affil', 'rp_other', 'codef', 'debtor', 'creditor'];
+const REL_CN = {sup: '供应商', cus: '客户', holder: '股东', invest: '对外投资', ctrl: '同一控制', person: '同一关键人员', affil: '联营/合营',
+  rp_other: '其他关联方', codef: '共同被告（担保连带）', debtor: '债务人', creditor: '债权人'};
+const REL_ORDER = ['holder', 'invest', 'ctrl', 'affil', 'cus', 'sup', 'codef', 'debtor', 'creditor', 'rp_other', 'person'];
+const INV = {sup: 'cus', cus: 'sup', holder: 'invest', invest: 'holder', debtor: 'creditor', creditor: 'debtor'};
+const FAM_OF = {holder: 0, invest: 0, ctrl: 0, affil: 0, sup: 1, cus: 1, codef: 2, debtor: 2, creditor: 2, rp_other: 3, person: 3};
+const FAM_CN = ['股权与控制', '供应链', '担保连带与债权债务', '其他关联（关联交易、同一人员）'];
+const FAM_PRIORITY = [2, 1, 0, 3];
+const TYPE_CN = ['上市公司', '非上市企业', '自然人', '金融机构', '政府与国资', '名称不完整'];
+const HUB = 50;
+const FAM_BITS = [0, 0, 0, 0];
+REL.forEach((r, b) => { FAM_BITS[FAM_OF[r]] |= 1 << b; });
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const fmt = n => n.toLocaleString('zh-CN');
+const store = {get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }};
+
+let N, L, NAMES, TYPES, XY, CODE, SHORT, IND, PROV, BOARD, LOWER, BBOX;
+let Y = null, graph = null, renderer = null, focus = null, focusE = null, PAL = {};
+const state = {year: YEARS[YEARS.length - 1], mode: 'risk', fam: [1, 1, 1, 1], types: [1, 1, 1, 1, 1, 1], riskOnly: false, sel: null, hop: 1, ego: false, path: null};
+
+function loadScript(src) {
+  return new Promise((ok, fail) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => fail(new Error('无法载入 ' + src)); document.head.appendChild(s); });
+}
+function loading(msg) { const el = $('#loading'); if (msg) { el.textContent = msg; el.classList.remove('off'); } else el.classList.add('off'); }
+
+/* ---------- 调色 ---------- */
+function hexA(hex, a) { const h = hex.trim().replace('#', ''); const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; }
+function readPalette() {
+  const cs = getComputedStyle(document.documentElement), v = k => cs.getPropertyValue(k).trim();
+  const a = parseFloat(v('--edge-a')) || .3;
+  PAL = {ink: v('--ink'), ink2: v('--ink-2'), muted: v('--muted'), card: v('--card'), paper: v('--paper'), rule: v('--rule'), dim: v('--dim'),
+    crit: v('--crit'), seri: v('--seri'), n: [v('--n0'), v('--n1'), v('--n2'), v('--n3'), v('--n3'), v('--n3')],
+    t: [v('--t0'), v('--t1'), v('--t2'), v('--t3'), v('--t3'), v('--t3')],
+    fam: [0, 1, 2, 3].map(i => v('--f' + i)), famA: [0, 1, 2, 3].map(i => hexA(v('--f' + i), i === 3 ? a * .8 : a))};
+}
+function nodeColor(i, kind, st) {
+  if (state.mode === 'type') return PAL.t[kind];
+  return st === 2 ? PAL.crit : st === 1 ? PAL.seri : PAL.n[kind];
+}
+
+/* ---------- 数据 ---------- */
+async function boot() {
+  readPalette();
+  $('#year').innerHTML = YEARS.slice().reverse().map(t => `<option value="${t}">${t} 年（决策日 ${t + 1}-04-30）</option>`).join('');
+  try {
+    await loadScript(`data/nodes.js${VQ}`);
+  } catch (e) { loading('没有找到 data/nodes.js。请保持 index.html 与 data、lib 文件夹在同一目录下打开。'); return; }
+  const D = GXD.nodes;
+  N = D.n; L = D.listed; NAMES = D.names; TYPES = D.types; XY = D.xy; CODE = D.code; SHORT = D.short; IND = D.ind; PROV = D.prov; BOARD = D.board;
+  LOWER = NAMES.map(s => s.toLowerCase());
+  const xs = [], ys = [];
+  for (let i = 0; i < N; i += 7) { xs.push(XY[2 * i]); ys.push(XY[2 * i + 1]); }
+  xs.sort((a, b) => a - b); ys.sort((a, b) => a - b);
+  const q = (arr, p) => arr[Math.floor(p * (arr.length - 1))];
+  BBOX = {x: [q(xs, .003), q(xs, .997)], y: [q(ys, .003), q(ys, .997)]};
+  const h = parseHash();
+  if (h.y && YEARS.includes(+h.y)) state.year = +h.y;
+  $('#year').value = state.year;
+  buildFilters();
+  await setYear(state.year);
+  if (h.n != null) { const i = keyToIndex(h.n); if (i != null) select(i, {locate: true}); }
+}
+
+async function setYear(t) {
+  loading(`正在载入 ${t} 年图谱…`);
+  const key = 'y' + t;
+  if (!window.GXD[key]) await loadScript(`data/${key}.js${VQ}`);
+  const d = GXD[key], P = d.pairs, np = P.length / 4;
+  const deg = new Int32Array(N);
+  for (let k = 0; k < np; k++) { deg[P[4 * k]]++; deg[P[4 * k + 1]]++; }
+  const off = new Int32Array(N + 1);
+  for (let i = 0; i < N; i++) off[i + 1] = off[i] + deg[i];
+  const nb = new Int32Array(2 * np), pid = new Int32Array(2 * np), fill = off.slice(0, N);
+  for (let k = 0; k < np; k++) { const a = P[4 * k], b = P[4 * k + 1]; nb[fill[a]] = b; pid[fill[a]++] = k; nb[fill[b]] = a; pid[fill[b]++] = k; }
+  const fin = new Int32Array(N), trade = new Int32Array(N), viol = new Int32Array(N), dist = new Int32Array(N);
+  for (let k = 0; k < d.risk.length; k += 5) { const i = d.risk[k]; fin[i] = d.risk[k + 1]; trade[i] = d.risk[k + 2]; viol[i] = d.risk[k + 3]; dist[i] = d.risk[k + 4]; }
+  const y = new Int8Array(N).fill(-1), pd1 = new Int32Array(N).fill(-1), pd4 = new Int32Array(N).fill(-1), q1 = new Int32Array(N).fill(-1), q4 = new Int32Array(N).fill(-1);
+  for (let k = 0; k < d.firms.length; k += 6) { const i = d.firms[k]; y[i] = d.firms[k + 1]; pd1[i] = d.firms[k + 2]; pd4[i] = d.firms[k + 3]; q1[i] = d.firms[k + 4]; q4[i] = d.firms[k + 5]; }
+  const present = new Uint8Array(N), st = new Uint8Array(N);
+  for (let i = 0; i < N; i++) {
+    present[i] = deg[i] > 0 || y[i] >= 0 ? 1 : 0;
+    st[i] = y[i] === 1 ? 2 : (fin[i] > 0 ? 1 : 0);
+  }
+  Y = {t, P, np, deg, off, nb, pid, fin, trade, viol, dist, y, pd1, pd4, q1, q4, present, st};
+  buildGraph();
+  renderStats(); renderLegend();
+  if (state.sel != null && !present[state.sel]) clearSel();
+  else if (state.sel != null) select(state.sel, {locate: false});
+  else renderDetail();
+  writeHash();
+  loading(null);
+}
+
+function famMaskOf(m) { let f = 0; for (let i = 0; i < 4; i++) if (m & FAM_BITS[i]) f |= 1 << i; return f; }
+function score(i) { return (Y.fin[i] + .5 * Y.trade[i] + .25 * Y.viol[i]) / 100; }
+function isHub(i) { return TYPES[i] !== '0' && Y.deg[i] > HUB; }
+function labelOf(i) { if (i < L) return SHORT[i] || NAMES[i]; const s = NAMES[i]; return s.length > 18 ? s.slice(0, 17) + '…' : s; }
+
+function buildGraph() {
+  const g = new graphology.Graph({type: 'undirected', multi: false, allowSelfLoops: false});
+  for (let i = 0; i < N; i++) {
+    if (!Y.present[i]) continue;
+    const kind = +TYPES[i], dg = Y.deg[i], st = Y.st[i];
+    const size = kind === 0 ? Math.min(1.7 + .5 * Math.sqrt(dg), 9) : Math.min(.9 + .38 * Math.sqrt(dg), 7);
+    g.addNode(i, {x: XY[2 * i], y: XY[2 * i + 1], size, label: labelOf(i), kind, st, color: PAL.n[kind], zIndex: st});
+  }
+  for (let k = 0; k < Y.np; k++) g.addEdgeWithKey(k, Y.P[4 * k], Y.P[4 * k + 1], {fams: famMaskOf(Y.P[4 * k + 2]), size: .5, color: PAL.famA[3]});
+  graph = g;
+  if (!renderer) createRenderer(); else { renderer.setGraph(g); computeFocus(); renderer.refresh(); }
+}
+
+/* ---------- 渲染 ---------- */
+function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function drawHover(ctx, d, s) {
+  const label = d.label; if (!label) return;
+  const size = s.labelSize + 1;
+  ctx.font = `600 ${size}px ${s.labelFont}`;
+  const w = ctx.measureText(label).width + 14, h = size + 12, x = d.x + d.size + 5, y = d.y - h / 2;
+  ctx.fillStyle = PAL.card; ctx.strokeStyle = PAL.rule; ctx.lineWidth = 1;
+  roundRect(ctx, x, y, w, h, 6); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = PAL.ink; ctx.textBaseline = 'middle'; ctx.fillText(label, x + 7, y + h / 2 + 1);
+  ctx.beginPath(); ctx.arc(d.x, d.y, d.size + 2.5, 0, Math.PI * 2); ctx.strokeStyle = PAL.ink; ctx.lineWidth = 1.5; ctx.stroke();
+}
+function drawLabel(ctx, d, s) {
+  if (!d.label) return;
+  const size = s.labelSize;
+  ctx.font = `${d.forceLabel ? 600 : 400} ${size}px ${s.labelFont}`;
+  ctx.lineWidth = 3; ctx.strokeStyle = PAL.paper; ctx.lineJoin = 'round';
+  ctx.strokeText(d.label, d.x + d.size + 3, d.y + size / 3);
+  ctx.fillStyle = PAL.ink; ctx.fillText(d.label, d.x + d.size + 3, d.y + size / 3);
+}
+function nodeReducer(n, a) {
+  const i = +n, r = {...a};
+  if (!state.types[a.kind]) { r.hidden = true; return r; }
+  r.color = nodeColor(i, a.kind, a.st);
+  if (focus) {
+    if (!focus.has(i)) {
+      if (state.ego) { r.hidden = true; return r; }
+      if (state.riskOnly && a.st === 0) { r.hidden = true; return r; }
+      r.color = PAL.dim; r.label = null; r.zIndex = -1; r.size = a.size * .55;
+    } else { r.zIndex = 3 + a.st; if (a.st > 0 || (a.kind === 0 && focus.size <= 200) || (state.path && focus.size <= 3)) r.forceLabel = true; }
+  } else if (state.riskOnly && a.st === 0) { r.hidden = true; return r; }
+  if (i === state.sel) { r.highlighted = true; r.size = a.size * 1.4 + 3; r.zIndex = 9; r.forceLabel = true; }
+  return r;
+}
+function edgeReducer(e, a) {
+  const r = {...a};
+  let on = 0; for (let i = 0; i < 4; i++) if (state.fam[i]) on |= 1 << i;
+  const vis = a.fams & on;
+  if (!vis) { r.hidden = true; return r; }
+  const f = FAM_PRIORITY.find(x => vis & (1 << x));
+  if (focus) {
+    if (!focusE.has(+e)) { r.hidden = true; return r; }
+    r.color = PAL.fam[f]; r.size = state.path ? 3 : 1.4; r.zIndex = 2;
+  } else r.color = PAL.famA[f];
+  return r;
+}
+function createRenderer() {
+  renderer = new Sigma(graph, $('#sg'), {
+    nodeReducer, edgeReducer, zIndex: true, hideEdgesOnMove: true, hideLabelsOnMove: false,
+    labelFont: '"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif', labelSize: 12, labelWeight: '400',
+    labelDensity: .6, labelGridCellSize: 90, labelRenderedSizeThreshold: 9,
+    defaultDrawNodeHover: drawHover, defaultDrawNodeLabel: drawLabel,
+    minCameraRatio: .003, maxCameraRatio: 4, stagePadding: 24, allowInvalidContainer: true,
+  });
+  if (renderer.setCustomBBox) renderer.setCustomBBox(BBOX);
+  renderer.on('clickNode', ({node}) => select(+node, {locate: false}));
+  renderer.on('clickStage', () => clearSel());
+  renderer.on('enterNode', () => { $('#sg').style.cursor = 'pointer'; });
+  renderer.on('leaveNode', () => { $('#sg').style.cursor = ''; });
+}
+
+/* ---------- 选中与聚焦 ---------- */
+function eachNb(i, fn) { for (let p = Y.off[i]; p < Y.off[i + 1]; p++) fn(Y.nb[p], Y.pid[p]); }
+function edgeOn(k) { const f = famMaskOf(Y.P[4 * k + 2]); let on = 0; for (let x = 0; x < 4; x++) if (state.fam[x]) on |= 1 << x; return (f & on) !== 0; }
+function nodeOn(j) { return state.types[+TYPES[j]] === 1; }
+function computeFocus() {
+  focus = focusE = null;
+  if (state.sel == null) return;
+  const i = state.sel;
+  focus = new Set([i]); focusE = new Set();
+  if (state.path) { state.path.nodes.forEach(v => focus.add(v)); state.path.edges.forEach(k => focusE.add(k)); return; }
+  eachNb(i, (j, k) => { if (edgeOn(k) && nodeOn(j)) { focus.add(j); focusE.add(k); } });
+  if (state.hop === 2) {
+    [...focus].forEach(j => {
+      if (j === i || isHub(j)) return;
+      eachNb(j, (v, k) => { if (v !== i && edgeOn(k) && nodeOn(v)) { focus.add(v); focusE.add(k); } });
+    });
+  }
+}
+function fitNodes(ids) {
+  if (!renderer) return;
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, n = 0;
+  for (const i of ids) {
+    const d = renderer.getNodeDisplayData(String(i)); if (!d) continue;
+    n++; x0 = Math.min(x0, d.x); x1 = Math.max(x1, d.x); y0 = Math.min(y0, d.y); y1 = Math.max(y1, d.y);
+  }
+  if (!n) return;
+  const {width, height} = renderer.getDimensions(), m = Math.min(width, height);
+  const ratio = n === 1 ? .05 : Math.min(1.1, Math.max(.006, 1.35 * Math.max((x1 - x0) * m / width, (y1 - y0) * m / height)));
+  renderer.getCamera().animate({x: (x0 + x1) / 2, y: (y0 + y1) / 2, ratio}, {duration: 600});
+}
+function locate(i) { fitNodes(focus && state.sel === i ? focus : [i]); }
+function select(i, opt = {}) {
+  if (!Y.present[i]) { renderDetailAbsent(i); return; }
+  if (state.sel !== i) state.open = null;
+  state.sel = i;
+  if (!opt.keepPath) state.path = null;
+  computeFocus(); renderer.refresh({skipIndexation: true});
+  renderDetail();
+  if (opt.locate !== false) locate(i);
+  writeHash();
+}
+function clearSel() {
+  state.sel = null; state.path = null; focus = focusE = null;
+  if (renderer) renderer.refresh({skipIndexation: true});
+  renderDetail(); writeHash();
+}
+
+/* ---------- 关系与路径 ---------- */
+function relsOf(i, k) {
+  const a = Y.P[4 * k], m = Y.P[4 * k + 2], out = [];
+  for (let b = 0; b < REL.length; b++) if (m & (1 << b)) out.push(a === i ? REL[b] : (INV[REL[b]] || REL[b]));
+  return out;
+}
+function stakeOf(k) { const w = Y.P[4 * k + 3]; return w > 0 ? (w / 10).toFixed(w >= 100 ? 1 : 2) + '%' : ''; }
+function pathsFrom(i) {
+  const seen = new Set(), out = [];
+  eachNb(i, (j, k1) => {
+    if (isHub(j)) return;
+    eachNb(j, (v, k2) => {
+      if (v === i || seen.has(j + ':' + v)) return;
+      const sc = score(v) + (Y.y[v] === 1 ? 10 : 0);
+      if (sc <= 0) return;
+      seen.add(j + ':' + v); out.push({j, v, k1, k2, sc});
+    });
+  });
+  return out.sort((a, b) => b.sc - a.sc).slice(0, 20);
+}
+
+/* ---------- 面板 ---------- */
+function statusHtml(i) {
+  const st = Y.st[i];
+  let h = '';
+  if (st === 2) h = `<div class="status"><span class="sw" style="background:${PAL.crit}"></span>决策日后 12 个月内违约（首次被提起金融债务诉讼）</div>`;
+  else if (st === 1) h = `<div class="status"><span class="sw" style="background:${PAL.seri}"></span>出险：近 36 个月作为被告被提起金融债务诉讼</div>`;
+  else if (score(i) > 0) h = `<div class="status" style="font-weight:500"><span class="sw" style="border:1.5px solid ${PAL.seri}"></span>近 36 个月有经营欠款诉讼或违规处罚（不计为出险）</div>`;
+  else h = `<div class="status" style="color:var(--muted);font-weight:500"><span class="sw" style="border:1.5px solid var(--muted)"></span>近 36 个月无被诉或处罚记录</div>`;
+  const k = +TYPES[i];
+  if (k === 5) h += '<p class="note">名称不完整：披露里只写了“LLC”“**医院”这类名称，不同企业的对手方可能被并到同一个节点上。</p>';
+  if (isHub(i)) h += '<p class="note">度数超过 50 的非上市主体，模型只把它用作一跳关联，不参与多跳传播。</p>';
+  return h;
+}
+function riskTag(v) { return Y.y[v] === 1 ? '12 个月内违约' : Y.fin[v] > 0 ? `金融债务被诉 s ${score(v).toFixed(2)}` : `欠款诉讼或违规 s ${score(v).toFixed(2)}`; }
+function nameLink(j) {
+  const st = Y.st[j], dot = st ? `<span class="sw" style="width:8px;height:8px;background:${st === 2 ? PAL.crit : PAL.seri}"></span>` : '';
+  return `${dot}<a data-n="${j}">${esc(j < L ? `${SHORT[j]}（${CODE[j]}）` : NAMES[j])}</a>`;
+}
+function riskBox(i) {
+  const f = Y.fin[i], t = Y.trade[i], v = Y.viol[i], d = Y.dist[i];
+  if (!(f || t || v || d)) return '';
+  const r = (l, x) => x ? `<div class="row"><span>${l}</span><b>${(x / 100).toFixed(2)}</b></div>` : '';
+  return `<div class="box">${r('金融债务被诉（衰减加权件数）', f)}${r('经营欠款被诉', t)}${r('违规处罚', v)}${d ? `<div class="row"><span>财务困境信号（亏损、资不抵债等）</span><b>${d / 100}</b></div>` : ''}
+    <div class="row"><span>风险事件强度 s</span><b>${score(i).toFixed(2)}</b></div></div>`;
+}
+function modelBox(i) {
+  if (Y.y[i] < 0) return i < L ? `<div class="box" style="color:var(--muted)">该企业不在 ${Y.t} 年建模样本中（金融业、上市不足或决策日前 24 个月内已违约）。</div>` : '';
+  const out = Y.y[i] === 1 ? '<b style="color:var(--crit)">是</b>' : '<b>否</b>';
+  if (Y.pd1[i] < 0) return `<div class="box"><div class="row"><span>决策日后 12 个月内违约</span>${out}</div><div class="row"><span>样本外违约概率</span><span style="color:var(--muted)">${Y.t} 年不在滚动测试期（2019—2023）</span></div></div>`;
+  const p = x => (x / 100).toFixed(2) + '%', q = x => (x / 10).toFixed(1);
+  return `<div class="box"><div class="row"><span>样本外违约概率 · 仅自身特征</span><b>${p(Y.pd1[i])} <small style="color:var(--muted)">分位 ${q(Y.q1[i])}</small></b></div>
+    <div class="row"><span>样本外违约概率 · 加入图谱特征</span><b>${p(Y.pd4[i])} <small style="color:var(--muted)">分位 ${q(Y.q4[i])}</small></b></div>
+    <div class="row"><span>决策日后 12 个月内违约</span>${out}</div></div>`;
+}
+const LIST_CAP = 30;
+function renderDetail() {
+  const el = $('#detail');
+  if (state.sel == null) {
+    const m = META[Y.t];
+    el.innerHTML = `<div class="empty-detail"><p><b>点击任一节点</b>，或在上方搜索企业全称、简称、股票代码，查看它在 ${Y.t} 年图谱中的关联方、风险事件和二跳传导路径。</p>
+      <p>本年共 ${fmt(m.nodes)} 个主体、${fmt(m.pairs)} 对关联；${fmt(m.risky)} 个主体近 36 个月被提起金融债务诉讼（橙色），${fmt(m.defaults)} 家样本企业在决策日后 12 个月内违约（红色）。</p>
+      <p>试试：搜索报告案例企业${HINT.map(s => `“${esc(s)}”`).join('')}，或勾选左侧“只显示出险与违约节点”看风险在网络中的分布。</p></div>`;
+    return;
+  }
+  const i = state.sel, kind = +TYPES[i];
+  const tags = [TYPE_CN[kind]];
+  if (i < L) { tags.push(CODE[i]); if (IND[i]) tags.push(IND[i]); if (PROV[i]) tags.push(PROV[i]); if (BOARD[i]) tags.push(BOARD[i]); }
+  if (isHub(i)) tags.push('枢纽（度 > 50）');
+  const groups = {};
+  eachNb(i, (j, k) => relsOf(i, k).forEach(r => (groups[r] = groups[r] || []).push([j, k])));
+  const risky = [];
+  eachNb(i, (j, k) => { if (Y.st[j] > 0 || score(j) > 0) risky.push([j, k]); });
+  risky.sort((a, b) => (Y.st[b[0]] - Y.st[a[0]]) || (score(b[0]) - score(a[0])));
+  const paths = pathsFrom(i);
+  const relTxt = (rels, k) => rels.map(r => REL_CN[r]).join('、') + (Y.P[4 * k + 3] > 0 && rels.some(r => r === 'holder' || r === 'invest') ? ` · 持股 ${stakeOf(k)}` : '');
+  let h = `<div class="dt"><h2>${esc(NAMES[i])}</h2><div class="tags">${tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+    ${statusHtml(i)}${modelBox(i)}${riskBox(i)}
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 2px">
+      <button class="btn" type="button" id="bLoc">定位</button>
+      <button class="btn ${state.hop === 2 ? 'on' : ''}" type="button" id="bHop">${state.hop === 2 ? '二跳关联（开）' : '显示二跳关联'}</button>
+      <button class="btn ${state.ego ? 'on' : ''}" type="button" id="bEgo">${state.ego ? '只看关联子图（开）' : '只看关联子图'}</button>
+      <button class="btn" type="button" id="bClr">取消选中</button></div>`;
+  h += `<h4>一跳风险关联方 <small>${risky.length} 个，有被诉、违规或违约记录</small></h4>`;
+  h += risky.length ? `<ul class="nl two">${risky.slice(0, LIST_CAP).map(([j, k]) => `<li>${nameLink(j)}<span class="meta">${esc(relTxt(relsOf(i, k), k))} · ${riskTag(j)}</span></li>`).join('')}</ul>` : '<p class="note">直接关联方都没有被诉、违规或违约记录。</p>';
+  h += `<h4>二跳传导路径 <small>经非枢纽中间方到达有风险事件的主体，按风险强度排序${paths.length === 20 ? '，前 20 条' : ''}</small></h4>`;
+  h += paths.length ? paths.map((p, x) => `<div class="path ${state.path && state.path.x === x ? 'on' : ''}" data-p="${x}">本企业 <span class="r">→ ${esc(relsOf(i, p.k1).map(r => REL_CN[r]).join('、'))} →</span> <a data-n="${p.j}">${esc(labelOf(p.j))}</a> <span class="r">→ ${esc(relsOf(p.j, p.k2).map(r => REL_CN[r]).join('、'))} →</span> <a data-n="${p.v}">${esc(labelOf(p.v))}</a>
+      <span class="r">· ${riskTag(p.v)}</span></div>`).join('') : '<p class="note">没有经非枢纽中间方到达的风险主体。</p>';
+  h += `<h4>全部关联 <small>${fmt(Y.deg[i])} 个关联方</small></h4>`;
+  REL_ORDER.forEach(r => {
+    const arr = groups[r]; if (!arr) return;
+    arr.sort((a, b) => (Y.st[b[0]] - Y.st[a[0]]) || (Y.deg[b[0]] - Y.deg[a[0]]));
+    const open = state.open && state.open[r];
+    h += `<p style="margin:10px 0 4px;font-size:12.5px;color:var(--ink-2)"><span class="ln" style="background:${PAL.fam[FAM_OF[r]]};vertical-align:middle;margin-right:6px"></span>${REL_CN[r]} <span style="color:var(--muted)">${arr.length}</span></p>
+      <ul class="nl">${(open ? arr : arr.slice(0, LIST_CAP)).map(([j, k]) => `<li>${nameLink(j)}<span class="meta">${(r === 'holder' || r === 'invest') && Y.P[4 * k + 3] > 0 ? '持股 ' + stakeOf(k) : (j >= L ? TYPE_CN[+TYPES[j]] : IND[j] || '')}</span></li>`).join('')}</ul>
+      ${arr.length > LIST_CAP && !open ? `<button class="more" type="button" data-open="${r}">展开全部 ${arr.length} 个</button>` : ''}`;
+  });
+  el.innerHTML = h + '</div>';
+  el.querySelectorAll('a[data-n]').forEach(a => a.onclick = ev => { ev.stopPropagation(); select(+a.dataset.n); });
+  el.querySelectorAll('.path').forEach(d => d.onclick = () => {
+    const p = paths[+d.dataset.p];
+    state.path = state.path && state.path.x === +d.dataset.p ? null : {x: +d.dataset.p, nodes: [i, p.j, p.v], edges: [p.k1, p.k2]};
+    computeFocus(); renderer.refresh({skipIndexation: true}); renderDetail();
+    fitNodes(state.path ? state.path.nodes : focus);
+  });
+  el.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { state.open = {...(state.open || {}), [b.dataset.open]: 1}; renderDetail(); });
+  $('#bLoc').onclick = () => locate(i);
+  $('#bHop').onclick = () => { state.hop = state.hop === 2 ? 1 : 2; state.path = null; computeFocus(); renderer.refresh({skipIndexation: true}); renderDetail(); };
+  $('#bEgo').onclick = () => { state.ego = !state.ego; renderer.refresh({skipIndexation: true}); renderDetail(); };
+  $('#bClr').onclick = clearSel;
+}
+function renderDetailAbsent(i) {
+  $('#detail').innerHTML = `<div class="dt"><h2>${esc(NAMES[i])}</h2><div class="tags"><span class="tag">${TYPE_CN[+TYPES[i]]}</span>${i < L ? `<span class="tag">${CODE[i]}</span>` : ''}</div>
+    <p class="note">该主体在 ${Y.t} 年图谱中没有关联记录。可以在上方切换到其他年份。</p></div>`;
+}
+function renderStats() {
+  const m = META[Y.t];
+  $('#stats').innerHTML = [[fmt(m.nodes), '主体（节点）'], [fmt(m.pairs), '关联（连线）'], [fmt(m.firms), '样本上市公司'], [fmt(m.defaults), '12 个月内违约'],
+    [fmt(m.risky), '出险：金融债务被诉'], [fmt(m.events), '有被诉或违规记录']].map(([v, l]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+}
+function renderLegend() {
+  const cnt = [0, 0, 0], tcnt = [0, 0, 0, 0, 0, 0], quiet = [0, 0];
+  for (let i = 0; i < N; i++) if (Y.present[i]) { cnt[Y.st[i]]++; tcnt[+TYPES[i]]++; if (!Y.st[i]) quiet[i < L ? 0 : 1]++; }
+  const li = (c, l, n) => `<li><span class="sw" style="background:${c}"></span>${l}<span class="n">${fmt(n)}</span></li>`;
+  $('#nodeLegend').innerHTML = state.mode === 'risk'
+    ? li(PAL.crit, '12 个月内违约', cnt[2]) + li(PAL.seri, '出险（金融债务被诉）', cnt[1]) + li(PAL.n[0], '上市公司（无事件）', quiet[0]) + li(PAL.n[1], '其他主体（无事件）', quiet[1])
+    : li(PAL.t[0], '上市公司', tcnt[0]) + li(PAL.t[1], '非上市企业', tcnt[1]) + li(PAL.t[2], '自然人', tcnt[2]) + li(PAL.t[3], '金融机构、政府与国资、名称不完整', tcnt[3] + tcnt[4] + tcnt[5]);
+  $('#typeFilter').querySelectorAll('.n').forEach((s, x) => s.textContent = fmt(tcnt[x]));
+  const fc = [0, 0, 0, 0];
+  for (let k = 0; k < Y.np; k++) { const f = famMaskOf(Y.P[4 * k + 2]); for (let x = 0; x < 4; x++) if (f & (1 << x)) fc[x]++; }
+  $('#famFilter').querySelectorAll('.n').forEach((s, x) => s.textContent = fmt(fc[x]));
+  $('#famFilter').querySelectorAll('.ln').forEach((s, x) => s.style.background = PAL.fam[x]);
+}
+function buildFilters() {
+  $('#typeFilter').innerHTML = TYPE_CN.map((t, x) => `<li><label><input type="checkbox" data-t="${x}" checked>${t}</label><span class="n"></span></li>`).join('');
+  $('#famFilter').innerHTML = FAM_CN.map((t, x) => `<li><label><input type="checkbox" data-f="${x}" checked><span class="ln"></span>${t}</label><span class="n"></span></li>`).join('');
+  $('#typeFilter').querySelectorAll('input').forEach(c => c.onchange = () => { state.types[+c.dataset.t] = c.checked ? 1 : 0; computeFocus(); renderer.refresh({skipIndexation: true}); });
+  $('#famFilter').querySelectorAll('input').forEach(c => c.onchange = () => { state.fam[+c.dataset.f] = c.checked ? 1 : 0; computeFocus(); renderer.refresh({skipIndexation: true}); });
+  $('#mode').querySelectorAll('button').forEach(b => b.onclick = () => {
+    state.mode = b.dataset.m; $('#mode').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    renderLegend(); renderer.refresh({skipIndexation: true});
+  });
+  $('#riskOnly').onchange = e => { state.riskOnly = e.target.checked; renderer.refresh({skipIndexation: true}); };
+}
+
+/* ---------- 搜索 ---------- */
+let sugItems = [], sugAct = -1;
+function search(q) {
+  q = q.trim().toLowerCase();
+  if (!q) return [];
+  const hits = [];
+  const isCode = /^\d{3,6}$/.test(q);
+  for (let i = 0; i < N; i++) {
+    let r = -1;
+    if (i < L) {
+      if (CODE[i] === q) r = 0;
+      else if (isCode && CODE[i].startsWith(q)) r = 1;
+      else if (SHORT[i].toLowerCase() === q) r = 0;
+      else if (SHORT[i].toLowerCase().includes(q)) r = 1;
+    }
+    if (r < 0) { const p = LOWER[i].indexOf(q); if (p === 0) r = LOWER[i].length === q.length ? 0 : 2; else if (p > 0) r = 3; }
+    if (r >= 0) hits.push([r, Y.present[i] ? 0 : 1, i < L ? 0 : 1, -Y.deg[i], i]);
+  }
+  hits.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2] || a[3] - b[3]);
+  return hits.slice(0, 14).map(h => h[4]);
+}
+function renderSug() {
+  const el = $('#sug');
+  if (!$('#q').value.trim()) { el.classList.remove('on'); return; }
+  el.innerHTML = sugItems.length ? sugItems.map((i, x) => `<div class="it ${x === sugAct ? 'act' : ''} ${Y.present[i] ? '' : 'off'}" data-i="${i}" role="option"><span>${esc(i < L ? `${SHORT[i]} · ${NAMES[i]}` : NAMES[i])}</span><small>${i < L ? CODE[i] + (IND[i] ? ' · ' + IND[i] : '') : TYPE_CN[+TYPES[i]]}${Y.present[i] ? '' : ' · 本年无关联'}</small></div>`).join('')
+    : '<div class="empty">没有匹配的主体</div>';
+  el.classList.add('on');
+  el.querySelectorAll('.it').forEach(d => d.onmousedown = e => { e.preventDefault(); pick(+d.dataset.i); });
+}
+function pick(i) { $('#q').value = i < L ? SHORT[i] : NAMES[i]; $('#sug').classList.remove('on'); select(i, {locate: true}); $('#q').blur(); }
+let sugTimer = 0;
+$('#q').addEventListener('input', () => { clearTimeout(sugTimer); sugTimer = setTimeout(() => { if (!Y) return; sugItems = search($('#q').value); sugAct = sugItems.length ? 0 : -1; renderSug(); }, 120); });
+$('#q').addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (!sugItems.length) return; sugAct = (sugAct + (e.key === 'ArrowDown' ? 1 : -1) + sugItems.length) % sugItems.length; renderSug(); }
+  else if (e.key === 'Enter') { if (!Y) return; if (!sugItems.length) sugItems = search($('#q').value); if (sugItems.length) pick(sugItems[Math.max(0, sugAct)]); }
+  else if (e.key === 'Escape') { $('#sug').classList.remove('on'); }
+});
+$('#q').addEventListener('blur', () => setTimeout(() => $('#sug').classList.remove('on'), 150));
+$('#q').addEventListener('focus', () => { if (sugItems.length && $('#q').value.trim()) renderSug(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.activeElement !== $('#q') && state.sel != null) clearSel(); });
+
+/* ---------- 其他控件 ---------- */
+$('#year').onchange = e => { state.year = +e.target.value; setYear(state.year); };
+$('#zin').onclick = () => renderer && renderer.getCamera().animatedZoom({duration: 250});
+$('#zout').onclick = () => renderer && renderer.getCamera().animatedUnzoom({duration: 250});
+$('#zreset').onclick = () => renderer && renderer.getCamera().animatedReset({duration: 350});
+function applyTheme(t) {
+  if (t) document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme');
+  readPalette();
+  if (renderer) { renderer.refresh({skipIndexation: true}); renderLegend(); renderDetail(); }
+}
+$('#theme').onclick = () => {
+  const dark = getComputedStyle(document.documentElement).getPropertyValue('color-scheme').trim() === 'dark';
+  const t = dark ? 'light' : 'dark'; store.set('gx-theme', t); applyTheme(t);
+};
+if (store.get('gx-theme')) document.documentElement.setAttribute('data-theme', store.get('gx-theme'));
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyTheme(document.documentElement.getAttribute('data-theme')));
+
+/* ---------- 地址栏状态 ---------- */
+function keyOf(i) { return i < L ? CODE[i] : NAMES[i]; }
+function keyToIndex(k) {
+  k = decodeURIComponent(k);
+  if (/^\d{6}$/.test(k)) { const p = CODE.indexOf(k); return p >= 0 ? p : null; }
+  const p = NAMES.indexOf(k); return p >= 0 ? p : null;
+}
+function parseHash() { const o = {}; location.hash.replace(/^#/, '').split('&').forEach(kv => { const [k, v] = kv.split('='); if (k) o[k] = v; }); return o; }
+function writeHash() {
+  const h = `#y=${state.year}` + (state.sel != null ? `&n=${encodeURIComponent(keyOf(state.sel))}` : '');
+  try { history.replaceState(null, '', h); } catch (e) {}
+}
+
+boot().catch(e => { console.error(e); loading('载入失败：' + e.message); });
+</script>
+</body>
+</html>
