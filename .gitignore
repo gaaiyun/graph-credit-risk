@@ -1,0 +1,11 @@
+# 原始数据与中间结果受 CNRDS / CSMAR 许可限制，不公开
+cache/
+# 参赛报告（含实名案例）只保留在本地
+report/
+output/fig/fig7_case*.png
+output/lead_time.csv
+output/log_*.txt
+.venv/
+__pycache__/
+*.pyc
+.playwright-mcp/

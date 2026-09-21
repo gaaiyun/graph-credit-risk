@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>关联图谱风控模型</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%231c1f23%22/%3E%3Cpath d=%22M9 22L16 10L23 22%22 stroke=%22%23f0773a%22 stroke-width=%222.4%22 fill=%22none%22/%3E%3Ccircle cx=%2216%22 cy=%2210%22 r=%223%22 fill=%22%23f0773a%22/%3E%3Ccircle cx=%229%22 cy=%2222%22 r=%222.6%22 fill=%22%23ebe6dc%22/%3E%3Ccircle cx=%2223%22 cy=%2222%22 r=%222.6%22 fill=%22%23ebe6dc%22/%3E%3C/svg%3E">
+<meta name="description" content="基于应用图谱信息的经营类客户风控模型构建：以A股非金融上市公司关联网络为代理样本的数据分析报告">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f6f3ec;--paper-2:#eee8dc;--card:#fbf9f4;--ink:#1c1f23;--ink-2:#454b54;--muted:#7b8794;--rule:#d8d1c3;
+  --accent:#c2410c;--accent-soft:#f3dccd;--blue:#2563eb;--green:#15803d;--shadow:0 1px 0 rgba(28,31,35,.04),0 8px 24px -16px rgba(28,31,35,.25);
+  --serif:"Noto Serif SC","Songti SC","SimSun",serif;--sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#141619;--paper-2:#1b1e22;--card:#1a1d21;--ink:#ebe6dc;--ink-2:#bdb7ab;--muted:#8b919a;--rule:#2d3137;
+  --accent:#f0773a;--accent-soft:#3a2418;--blue:#6ea0ff;--green:#4ade80;--shadow:0 8px 24px -16px rgba(0,0,0,.6);}}
+:root[data-theme="dark"]{
+  --paper:#141619;--paper-2:#1b1e22;--card:#1a1d21;--ink:#ebe6dc;--ink-2:#bdb7ab;--muted:#8b919a;--rule:#2d3137;
+  --accent:#f0773a;--accent-soft:#3a2418;--blue:#6ea0ff;--green:#4ade80;--shadow:0 8px 24px -16px rgba(0,0,0,.6);}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.85;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--ink) 6%,transparent) 1px,transparent 0);background-size:22px 22px}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header.mast{border-bottom:1px solid var(--rule);padding:18px 0 34px;position:relative}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.kicker b{color:var(--accent);font-weight:500}
+h1.title{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5.2vw,58px);line-height:1.14;letter-spacing:-.01em;margin:26px 0 12px;max-width:17em}
+h1.title em{font-style:normal;color:var(--accent)}
+.sub{font-family:var(--serif);font-size:clamp(16px,2vw,20px);color:var(--ink-2);margin:0 0 26px;max-width:40em}
+.lede{font-size:17px;max-width:46em;border-left:3px solid var(--accent);padding:4px 0 4px 16px;color:var(--ink)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:30px;border-top:2px solid var(--ink);border-bottom:1px solid var(--rule)}
+.kpi{padding:16px 14px 14px;border-right:1px solid var(--rule)}
+.kpi:last-child{border-right:0}
+.kpi .v{font-family:var(--serif);font-weight:900;font-size:clamp(26px,3.4vw,40px);line-height:1.05}
+.kpi .v small{font-size:.45em;font-weight:600;color:var(--muted);margin-left:2px}
+.kpi .l{font-size:13px;color:var(--ink-2);margin-top:6px;line-height:1.5}
+.theme-btn{background:none;border:1px solid var(--rule);color:var(--ink-2);font-family:var(--mono);font-size:11px;padding:2px 10px;border-radius:999px;cursor:pointer;margin-left:12px;letter-spacing:.05em}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px;padding:40px 0 80px}
+nav.toc{position:sticky;top:24px;align-self:start;font-size:13.5px;line-height:1.6}
+nav.toc .h{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted);margin-bottom:10px}
+nav.toc a{display:block;color:var(--ink-2);text-decoration:none;padding:5px 0 5px 12px;border-left:2px solid var(--rule)}
+nav.toc a.l2{padding-left:24px;font-size:12.5px;color:var(--muted)}
+nav.toc a:hover,nav.toc a.on{color:var(--accent);border-left-color:var(--accent)}
+main{max-width:780px;min-width:0}
+main h2{font-family:var(--serif);font-weight:900;font-size:clamp(24px,3vw,32px);margin:56px 0 8px;line-height:1.25;display:flex;gap:14px;align-items:baseline}
+main h2 .n{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--accent);letter-spacing:.06em}
+main h3{font-family:var(--serif);font-weight:600;font-size:20px;margin:34px 0 6px}
+main p{margin:10px 0;color:var(--ink)}
+main p.note{font-size:13px;color:var(--muted);line-height:1.7}
+figure{margin:22px 0 26px}
+figure .card{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:10px;box-shadow:var(--shadow)}
+figure img{width:100%;height:auto;display:block}
+figcaption{font-size:13px;color:var(--ink-2);margin-top:9px;line-height:1.65}
+figcaption b{font-family:var(--serif);color:var(--ink)}
+.tbl{overflow-x:auto;margin:18px 0 24px;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--rule)}
+th:first-child,td:first-child{text-align:left}
+thead th{font-weight:700;font-size:12.5px;color:var(--ink-2);border-bottom:1px solid var(--ink)}
+tr.hl td{background:var(--accent-soft)}
+.tcap{font-family:var(--serif);font-size:14px;font-weight:600;margin:24px 0 6px}
+.callout{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--accent);padding:14px 18px;border-radius:4px;margin:22px 0}
+.callout .t{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--accent);margin-bottom:4px}
+.svgchart{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:14px 14px 6px;box-shadow:var(--shadow)}
+.svgchart svg{width:100%;height:auto;display:block}
+.svgchart text{font-family:var(--sans);fill:var(--ink-2)}
+.explorer{background:var(--card);border:1px solid var(--rule);border-radius:6px;box-shadow:var(--shadow);overflow:hidden}
+.tabs{display:flex;border-bottom:1px solid var(--rule);overflow-x:auto}
+.tabs button{flex:1;min-width:120px;background:none;border:0;border-right:1px solid var(--rule);padding:11px 12px;font-family:var(--sans);font-size:13.5px;color:var(--ink-2);cursor:pointer;text-align:left}
+.tabs button:last-child{border-right:0}
+.tabs button.on{background:var(--paper-2);color:var(--ink);box-shadow:inset 0 -2px 0 var(--accent)}
+.ex-body{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}
+.ex-graph{border-right:1px solid var(--rule);padding:8px}
+.ex-graph svg{width:100%;height:auto;display:block}
+.ex-side{padding:14px 16px;font-size:13.5px;max-height:520px;overflow:auto}
+.ex-side h4{font-family:var(--serif);margin:2px 0 6px;font-size:16px}
+.ex-side .meta{font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.7}
+.ex-side ul{padding-left:18px;margin:6px 0}
+.rank{display:flex;gap:10px;margin:10px 0}
+.rank>div{flex:1;border:1px solid var(--rule);border-radius:4px;padding:8px 10px}
+.rank .v{font-family:var(--serif);font-weight:900;font-size:22px}
+.rank .l{font-size:11.5px;color:var(--muted)}
+.node circle,.node rect{cursor:pointer;transition:transform .15s}
+.node:hover circle,.node:hover rect{transform:scale(1.25)}
+.node text{font-size:12.5px;fill:var(--ink);pointer-events:none}
+.edge line{stroke:var(--rule);stroke-width:1.3}
+.edge text{font-size:11px;fill:var(--muted)}
+footer{border-top:1px solid var(--rule);padding:26px 0 40px;font-size:12.5px;color:var(--muted);line-height:1.8}
+.reveal{opacity:0;transform:translateY(10px);animation:rv .7s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes rv{to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.reveal{animation:none;opacity:1;transform:none}}
+@media (max-width:900px){.layout{grid-template-columns:1fr;gap:0}nav.toc{display:none}.kpis{grid-template-columns:repeat(2,1fr)}
+  .kpi:nth-child(2){border-right:0}.kpi:nth-child(-n+2){border-bottom:1px solid var(--rule)}.ex-body{grid-template-columns:1fr}.ex-graph{border-right:0;border-bottom:1px solid var(--rule)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="mast">
+  <div class="kicker reveal"><span><b>数据分析赛道</b> · 赛题：基于应用图谱信息的经营类客户风控模型的构建</span><span>2026-09-21<button class="theme-btn" id="themeBtn" type="button">深 / 浅</button></span></div>
+  <h1 class="title reveal" style="animation-delay:.08s">风险沿着<em>股权与担保链</em>传导：一个关联图谱增强的企业信用风控模型</h1>
+  <p class="sub reveal" style="animation-delay:.16s">以 A 股非金融上市公司 2016—2023 年的逐年异质关联网络为代理样本</p>
+  <p class="lede reveal" style="animation-delay:.24s">控制自身财务后，股东出险与担保连带方出险使企业违约优势比升至 <b>1.74 和 2.12</b>，吸收行业×年份共同冲击后依然成立。风险传导以月计：关联方新出现债务诉讼后，企业月度违约率是未触发期间的 <b>3.17 倍</b>。年度评分吸收不了这种短周期信号，图谱的用处在贷中预警。</p>
+  <div class="kpis"><div class="kpi reveal" style="animation-delay:0.30s"><div class="v">29,892</div><div class="l">企业-年样本 · 517 次首次违约</div></div><div class="kpi reveal" style="animation-delay:0.37s"><div class="v">10<small>类</small></div><div class="l">关联关系 · 每年 4.0 万至 6.8 万节点</div></div><div class="kpi reveal" style="animation-delay:0.44s"><div class="v">3.17<small>×</small></div><div class="l">关联方新出现债务诉讼后的月度违约率之比 · 中位提前 3.9 个月</div></div><div class="kpi reveal" style="animation-delay:0.51s"><div class="v">0.877</div><div class="l">年度评分滚动外推 AUC · 图谱特征无稳定增量</div></div></div>
+</header>
+<div class="layout">
+  <nav class="toc" id="toc"><div class="h">目录</div><a href="#s1">1 数据介绍</a>
+<a class="l2" href="#h1">1.1 代理样本与数据来源</a>
+<a class="l2" href="#h2">1.2 违约标签与决策时点</a>
+<a class="l2" href="#h3">1.3 关联图谱</a>
+<a href="#s2">2 描述性分析</a>
+<a href="#s3">3 模型分析</a>
+<a class="l2" href="#h6">3.1 特征体系与传导计算</a>
+<a class="l2" href="#h7">3.2 逐层消融：固定切分与滚动外推</a>
+<a class="l2" href="#h8">3.3 传导渠道分解</a>
+<a class="l2" href="#h9">3.4 关系图卷积网络</a>
+<a class="l2" href="#h10">3.5 可解释性</a>
+<a href="#s4">4 应用验证</a>
+<a class="l2" href="#h12">4.1 年度评分的业务表现</a>
+<a class="l2" href="#h13">4.2 贷中关联事件预警</a>
+<a class="l2" href="#h14">4.3 案例：一条二跳传导路径</a>
+<a href="#s5">5 产品思路</a>
+<a href="#s6">6 总结结论</a>
+<a href="#sa">附录 稳健性与复现</a></nav>
+  <main id="main"><h2 id="s1"><span class="n">1</span>数据介绍</h2>
+<h3 id="h1">1.1 代理样本与数据来源</h3>
+<p>经营类客户的授信与逾期记录只存在于银行内部，公开渠道拿不到违约标签。我们选择 A 股非金融上市公司作为代理样本：它们的上下游、股权、关联交易和诉讼都来自强制披露，每条记录带公告日，能还原“授信决策当天看得到什么”。表 1 列出使用的数据。申万行业分类历史和交易所上市公司名录由我们从申万宏源研究官网与沪深北交易所自行下载，前者提供按日期生效的行业归属，后者用于把关联方全称对齐到股票代码。</p>
+<div class="tcap">表1　数据来源</div><div class="tbl"><table><thead><tr><th>数据</th><th>来源</th><th>覆盖期</th><th>记录数</th><th>用途</th></tr></thead><tbody><tr><td>前五大客户/供应商、集中度</td><td>CSMAR 供应链研究数据库</td><td>2001—2025</td><td>59.3 万</td><td>供应商、客户边</td></tr><tr><td>前十大股东</td><td>CNRDS</td><td>2014—2025</td><td>49.7 万</td><td>股东、对外投资边</td></tr><tr><td>关联交易</td><td>CNRDS</td><td>2000—2026</td><td>49.3 万</td><td>同一控制、关键人员、联营合营、其他关联方边</td></tr><tr><td>诉讼仲裁</td><td>CNRDS</td><td>2014—2025</td><td>12.6 万</td><td>违约标签、节点风险、共同被告与债务人边</td></tr><tr><td>违规处罚</td><td>CNRDS</td><td>2014—2025</td><td>2.5 万</td><td>节点风险</td></tr><tr><td>偿债能力、盈利能力（季度）</td><td>CNRDS</td><td>2014—2025</td><td>各 19.6 万</td><td>自身财务特征</td></tr><tr><td>机构持股、重要股权交易</td><td>CNRDS</td><td>2014—2025</td><td>4.9 万 / 24.4 万</td><td>治理与减持特征</td></tr><tr><td>申万行业分类历史（自行下载）</td><td>申万宏源研究官网</td><td>1990—2026</td><td>1.3 万</td><td>行业、同业竞争</td></tr><tr><td>上市公司名录与退市名单（自行下载）</td><td>沪深北交易所</td><td>截至 2026-09</td><td>5,932 家</td><td>全称对齐、上市日期</td></tr></tbody></table></div><p class="note">注：CNRDS 为中国研究数据服务平台；CSMAR 为国泰安数据库。</p>
+<h3 id="h2">1.2 违约标签与决策时点</h3>
+<p>决策时点 D_t 取 t+1 年 4 月 30 日，即 t 年年报的法定披露截止日，特征只使用该日以前公开的信息，标签窗口为 D_t 之后 12 个月。违约定义为企业本身或其子公司、孙公司、分公司以被告身份被提起金融债务诉讼，案由包括金融借款、借款、票据追索、融资租赁、保证与担保追偿和债券交易，共 12,047 宗、涉及 676 家公司。这类案件的原告主要是银行、保理和融资租赁公司，含义接近贷款逾期后的司法催收。决策时点前 24 个月内已被提起过此类诉讼的企业不进入当年样本，模型预测的是首次违约。</p>
+<p>剔除银行与非银金融后，样本覆盖 2016—2023 年 8 个观察年、29,892 个企业-年、517 次违约（1.73%）。2016—2020 年用于训练，2021 年用于验证与早停，2022—2023 年为时间外推测试集；第 3.2 节另做 2019—2023 年的逐年滚动外推。诉讼数据取自上市公司公告，不受 2021 年后裁判文书网公开率下降的影响。</p>
+<h3 id="h3">1.3 关联图谱</h3>
+<p>图谱按观察年分别构建。上市公司用股票代码标识，非上市企业、自然人和机构用规范化全称标识。全称字典合并了交易所名录、供应链数据中标注为上市公司的对手方和违规处罚对象，共 6,837 个全称对应 5,896 个代码。名称只做全角半角、括号和空白的等价变换，不做子串匹配，避免“京东”匹配到“京东方”这类假阳性。表 2 给出关系的构造规则，每年的图有 4.0 万至 6.8 万个节点、4.7 万至 8.0 万条边。</p>
+<div class="tcap">表2　关系类型与构造规则</div><div class="tbl"><table><thead><tr><th>关系</th><th>构造规则</th><th>边数(2023)</th><th>样本覆盖率</th></tr></thead><tbody><tr><td>供应商 / 客户</td><td>年报前五大，剔除“客户一”“A 公司”“**”等匿名名称；权重为采购或销售占比，上一年关系减半</td><td>11,304×2</td><td>22.1%</td></tr><tr><td>股东 / 对外投资</td><td>前十大股东，剔除基金、券商、保险、QFII、主权基金、创投与名义持有人；自然人仅保留持股 ≥5%</td><td>16,934×2</td><td>99.2%</td></tr><tr><td>同一控制</td><td>36 个月内关联交易公告中的同一实际控制人、控股股东、母公司、同一集团</td><td>31,920</td><td>45.9%</td></tr><tr><td>同一关键人员</td><td>关联交易公告中的同一董监高或关键管理人员</td><td>4,616</td><td>33.4%</td></tr><tr><td>联营/合营/子公司</td><td>关联交易公告中的联营、合营、参股与子公司</td><td>7,374</td><td>26.1%</td></tr><tr><td>其他关联方</td><td>关联交易公告中其余关联方</td><td>32,602</td><td>59.9%</td></tr><tr><td>共同被告</td><td>企业自身被诉案件中的其他被告（担保人、被担保人、连带责任方）</td><td>13,098</td><td>19.6%</td></tr><tr><td>债务人</td><td>企业作为原告起诉的金融债务或经营性欠款对象</td><td>6,770</td><td>16.4%</td></tr></tbody></table></div><p class="note">注：边数为 2023 观察年的有向边数；“×2”表示该类关系与其反向关系（客户、对外投资）各计一次。覆盖率为存在该类邻居的企业-年占比。</p>
+<p>节点风险取决策时点前 36 个月内的事件，按 12 个月半衰期衰减后加总：作为被告的金融债务诉讼记 1，经营性欠款诉讼（货款、工程款、买卖合同等）记 0.5，违规处罚记 0.25。上市公司节点另记财务困境（当年亏损、资不抵债、连续两年亏损）。度数超过 50 的非上市实体（大型央企客户、地方国资平台等，每年 79—100 个）只参与一跳计算，不参与多跳传播。</p>
+<h2 id="s2"><span class="n">2</span>描述性分析</h2>
+<p>图 1 给出违约率的年度走势。2017 年最高（3.09%），2022 年最低（0.64%），2023 年回升到 1.19%，与 2018—2020 年民营企业债务集中暴露、2021 年后房地产链条风险释放的时间线吻合。分行业看，房地产违约率 4.60%，建筑装饰 3.02%，商贸零售 2.88%。违约企业的资产负债率中位数为 0.60，正常企业为 0.39；ROA 中位数分别为 0.80% 和 3.79%。</p>
+<figure><div class="card"><img src="assets/fig1_year.png" alt="样本规模与首次违约率（按观察年）" loading="lazy"></div><figcaption><b>图1</b>　样本规模与首次违约率（按观察年）</figcaption></figure>
+<p>图 2 按关系类型比较有、无“风险邻居”时的违约率。风险邻居指决策时点前 36 个月内作为被告卷入金融债务或经营性欠款诉讼的关联方。共同被告出险时，企业违约率为 6.56%，是没有此类邻居企业的 5.2 倍；联营合营子公司为 2.8 倍，债务人 2.7 倍，股东 2.5 倍，客户 1.9 倍，供应商 1.4 倍；对外投资对象出险的企业违约率反而略低（0.8 倍）。这些是未加控制的原始差异：风险企业本来就聚集在少数行业和集团里，第 3.3 节做条件检验。</p>
+<figure><div class="card"><img src="assets/fig2_relation_lift.png" alt="有、无风险邻居的企业未来 12 个月首次违约率（按关系类型）" loading="lazy"></div><figcaption><b>图2</b>　有、无风险邻居的企业未来 12 个月首次违约率（按关系类型）</figcaption></figure>
+<h2 id="s3"><span class="n">3</span>模型分析</h2>
+<h3 id="h6">3.1 特征体系与传导计算</h3>
+<p>特征分五组。自身组包含 33 个财务比率及其年度变动、诉讼与违规记录、股东减持、机构持股、股权结构、上市年限、板块和行业，共 54 个。其余四组来自图谱：一跳组对 10 类关系分别计算邻居数、金融债务暴露、欠款被诉暴露、风险邻居数和上市邻居的财务困境数（56 个）；多跳组计算分关系的二跳风险和全图扩散风险（13 个）；结构组计算度数、PageRank、k-core 和控制圈（持股 20% 以上的控股关系与同一控制关系构成的连通分量）的规模与违约暴露（8 个）；同业组以申万二级行业为竞争者集合，计算同业违约率、亏损率以及本企业相对同业的 ROA 与营收增速（9 个）。</p>
+<p>多跳传播在对称归一化邻接矩阵 Â = D^(-1/2) A D^(-1/2) 上进行。企业 i 经第一跳关系 r 收到的二跳风险为</p>
+<p style="text-align:center;font-family:var(--mono);font-size:14px">h2_r(i) = Σ_j W_r(i,j) · [ Σ_k Â(j,k)·s_k − Â(j,i)·s_i ]</p>
+<p>减去的一项去掉了“i→j→i”的回声，避免把企业自身风险当成邻居风险。三跳扩散风险为 ppr3 = Âs + α(Â²s − diag(Â²)∘s) + α²Â³s，α = 0.5。</p>
+<h3 id="h7">3.2 逐层消融：固定切分与滚动外推</h3>
+<p>我们用 LightGBM 逐层加入特征组（5 个随机种子平均，验证集早停），并同时报告两种检验口径：2022—2023 年固定切分（86 次违约），以及 2019—2023 年逐年滚动外推（每年用此前全部年份训练、前一年验证，合并 269 次违约）。增量的置信区间来自对测试样本的配对分层 bootstrap（2,000 次）。结果见表 3 和图 3。</p>
+<div class="tcap">表3　逐层消融结果</div><div class="tbl"><table><thead><tr><th>模型</th><th>固定切分AUC</th><th>相对基线ΔAUC [95%CI]</th><th>滚动外推AUC</th><th>相对基线ΔAUC [95%CI] </th></tr></thead><tbody><tr class="hl"><td>M1 自身</td><td>0.929</td><td>—</td><td>0.877</td><td>—</td></tr><tr class="hl"><td>M2 +一跳关联</td><td>0.936</td><td>+0.0066 [+0.0002, +0.0128]</td><td>0.877</td><td>+0.0008 [-0.0043, +0.0059]</td></tr><tr><td>M3 +多跳传导</td><td>0.933</td><td>+0.0038 [-0.0040, +0.0113]</td><td>0.877</td><td>+0.0005 [-0.0059, +0.0070]</td></tr><tr><td>M4 +结构位置</td><td>0.934</td><td>+0.0045 [-0.0021, +0.0114]</td><td>0.879</td><td>+0.0020 [-0.0053, +0.0093]</td></tr><tr><td>M5 +同业竞争</td><td>0.928</td><td>-0.0019 [-0.0091, +0.0052]</td><td>0.879</td><td>+0.0023 [-0.0054, +0.0096]</td></tr><tr><td>S0 无报表基线</td><td>0.892</td><td>—</td><td>0.838</td><td>—</td></tr><tr><td>S1 无报表+图谱</td><td>0.888</td><td>-0.0033 [-0.0183, +0.0125]</td><td>0.830</td><td>-0.0084 [-0.0207, +0.0035]</td></tr></tbody></table></div><p class="note">注：M1—M5 逐层加入自身、一跳关联、多跳传导、结构位置和同业竞争特征；S0 只保留诉讼与治理变量、去掉全部财务报表，S1 在 S0 上加入图谱特征。ΔAUC 对 M2—M5 以 M1 为基线，对 S1 以 S0 为基线。</p>
+<p>固定切分下，加入一跳关联特征的 M2 把 AUC 从 0.929 提到 0.936，增量的 95% 置信区间为 [+0.0002, +0.0128]；继续加入多跳、结构和同业特征没有进一步提升。滚动外推给出不同的结论：M2 的增量缩小到 +0.0008，置信区间 [-0.0043, +0.0059]，M4 为 +0.0020 [-0.0053, +0.0093]，五个外推年份里增量的方向并不一致。固定切分上的显著增量来自单次切分的抽样波动。去掉财务报表（S0）后再加入图谱（S1），滚动外推 AUC 反而下降 0.0084。把 15 个图谱变量压缩成一个图谱风险分再叠加，同样没有增量（附表A1）。</p>
+<figure><div class="card"><img src="assets/fig3_ablation.png" alt="逐层消融：固定切分的 AUC 与滚动外推的增量" loading="lazy"></div><figcaption><b>图3</b>　逐层消融：固定切分的 AUC 与滚动外推的增量</figcaption></figure>
+<h3 id="h8">3.3 传导渠道分解</h3>
+<p>为了回答“风险从哪里来”，我们把每类关系上是否存在风险邻居作为解释变量，控制 11 个自身财务与诉讼变量、年份和行业固定效应，估计 Logit 模型，标准误按公司聚类（图 4，N = 29,892）。三条渠道显著：股东出险的优势比为 1.74（95% CI 1.28—2.36），共同被告出险为 2.12（95% CI 1.59—2.84），债务人违约为 1.27（95% CI 1.00—1.61）。客户渠道为 1.51（95% CI 0.94—2.43），区间下限略低于 1。供应商、同一控制、同一关键人员和对外投资的优势比分别为 0.91、0.97、1.12 和 0.76，区间都包含 1。同一行业同一年份的共同冲击（例如 2021 年后的房地产链条）会同时抬高企业与其关联方的违约，为此我们改用行业×年份固定效应的线性概率模型（30 个行业×8 年，共 217 个单元）：股东出险使违约概率提高 +1.59 个百分点（95% CI +0.67—+2.50），共同被告出险提高 +2.21 个百分点（95% CI +1.07—+3.35），相对 1.73% 的基准违约率分别是 92% 和 128%；债务人渠道降到 +0.03 个百分点（95% CI -0.53—+0.59）。</p>
+<p>两条稳健渠道都有直接的资金链接。股东出险后，可能通过股权质押平仓、资金占用和抽回借款拖累企业；共同被告大多是担保人与被担保人，一方违约，另一方要承担代偿责任。债务人渠道的原始关联主要来自行业共同冲击：同一轮行业下行里，企业既起诉欠款方，自己也更容易违约。赛题列举的另外两条路径，上游供应商提价和竞争对手突破，在这套数据里没有找到证据：同业违约率每上升 1 个百分点，优势比为 0.99（95% CI 0.96—1.01）；企业营收增速相对同业每高 1 个单位，优势比为 1.09（95% CI 0.83—1.42）。</p>
+<figure><div class="svgchart"><div id="forestChart"></div></div><figcaption><b>图4</b>　分关系类型的风险传导强度（Logit 优势比与 95% 置信区间）</figcaption></figure>
+<h3 id="h9">3.4 关系图卷积网络</h3>
+<p>作为对照，我们训练了两层关系图卷积网络（R-GCN）：11 类有向关系各有一套权重，隐藏层 64 维，输出层拼接节点自身表示，在 2016—2020 年的年度图上训练、2021 年早停，3 个种子平均。它在 2022—2023 年测试集上的 AUC 为 0.936，高于 GBM 自身模型的 0.929。这部分提升可能来自图结构，也可能来自神经网络这一模型类别，为此我们训练了一个去掉所有边、其他完全相同的对照网络：其 AUC 为 0.936，R-GCN 相对它的增量为 -0.0006，95% CI [-0.0076, +0.0059]，提升来自模型类别而不是图结构。GBM(M4) 与 R-GCN 的秩平均集成 AUC 为 0.945，同样方式集成的 GBM(M1) 与去边网络为 0.942，差值 +0.0028，95% CI [-0.0026, +0.0085]。在 2019—2023 年滚动外推中，R-GCN 相对去边网络的增量为 -0.0068，95% CI [-0.0139, +0.0004]；两种集成之差为 +0.0022，95% CI [-0.0026, +0.0073]。另一个结果与图谱无关：只用自身特征的 GBM 与去边网络做秩平均，滚动外推 AUC 为 0.879，相对单一 GBM 的增量为 +0.0023，95% CI [-0.0104, +0.0151]。</p>
+<h3 id="h10">3.5 可解释性</h3>
+<p>图 5 是全特征 LightGBM 在测试集上的 SHAP 分解。自身特征贡献 77.6%，一跳关联 6.6%，同业 8.5%，多跳与结构合计 7.2%。贡献最大的单个特征是资产减值损失占营收的比例。下游客户违约首先以应收账款坏账准备的形式进入年报，到年报披露日，一部分关联方风险已经折算进企业自身的财务科目，这是年度评分中图谱增量有限的一个直接原因。</p>
+<figure><div class="card"><img src="assets/fig5_shap.png" alt="SHAP 贡献：特征组占比与前 18 个特征" loading="lazy"></div><figcaption><b>图5</b>　SHAP 贡献：特征组占比与前 18 个特征</figcaption></figure>
+<h2 id="s4"><span class="n">4</span>应用验证</h2>
+<h3 id="h12">4.1 年度评分的业务表现</h3>
+<p>在 2022—2023 年测试集上，按 M1 评分拒绝风险最高的 10% 企业可以拦截 75.6% 的违约，拒绝 20% 可拦截 89.5%，通过客群的坏账率从不拦截时的 0.92% 降到 0.12%。M4 的对应数字为 74.4%、90.7% 和 0.11%，与 M1 没有实质差别。</p>
+<h3 id="h13">4.2 贷中关联事件预警</h3>
+<p>年度评分只在年报披露后更新一次，关联方风险却在一年中随时出现。我们模拟贷中监控：从决策时点起跟踪每家样本企业的股东、共同被告和债务人，一旦有关联方新被提起金融债务或经营性欠款诉讼，即视为触发，企业自身作为当事人的案件不计入。随后比较触发后与未触发期间的月度首次违约率。</p>
+<p>触发后企业的月度违约率为 4.29‰，未触发期间为 1.35‰，率比 3.17（95% CI 2.37—4.23）；从触发到违约的中位时间为 3.9 个月，四分位距 1.8—8.0 个月（图 6）。按样本外 M1 评分分层后，自身评分中低风险段（后 80%）的率比为 3.37（1.46—7.79），高风险段为 1.95（1.30—2.95），两层的率比都显著大于 1，触发信号携带了自身评分之外的信息。触发日推后 30 天、给银行留出反应期后，率比为 3.07（2.24—4.19）。按行业×年份分层的 Mantel-Haenszel 率比为 3.03（企业聚类 bootstrap 95% CI 2.20—4.01），共同冲击解释不了这一结果。拆开触发源，股东与共同被告触发的率比为 3.53（2.47—5.04），债务人触发为 2.59（1.67—4.01）。债务人的静态暴露在 3.3 节不稳健，它的新增诉讼却是有效的动态信号：欠款方刚出事时，企业的应收账款损失还没有进入报表。改用供应商和客户作为触发源时，中低风险段的率比只有 1.22（0.17—8.79）。</p>
+<figure><div class="card"><img src="assets/fig6_monitor.png" alt="贷中关联事件预警：触发后的累计违约与分层率比" loading="lazy"></div><figcaption><b>图6</b>　贷中关联事件预警：触发后的累计违约与分层率比</figcaption></figure>
+<h3 id="h14">4.3 案例：一条二跳传导路径</h3>
+<p>案例 1 是一家建筑装饰企业。决策时点仅用自身特征的风险分位为 72.5%，加入关联特征后升至 86.4%。它的前五大客户之一是一家建筑总包企业，这家总包企业又是一家已违约房企的前五大供应商，该房企在决策时点前 36 个月内有 9 次被诉记录。7 个月后，案例企业被提起借款合同纠纷诉讼。这条“房企违约 → 总包 → 分包”的路径不出现在案例企业自身的任何报表科目里。下图可切换三个案例，点击节点查看关联方的风险记录（网页版已脱敏）。</p>
+<figure><div class="explorer"><div class="tabs" id="exTabs"></div><div class="ex-body"><div class="ex-graph" id="exGraph"></div><div class="ex-side" id="exSide"></div></div></div><figcaption><b>图7</b>　关联案例网络（已脱敏，点击节点查看）</figcaption></figure>
+<p>本文有四点局限。第一，代理样本是规模大、信息透明的上市公司，自身财务的解释力远高于经营类客户。第二，违约标签是被提起诉讼，不等于逾期，诉讼披露还有重要性门槛，小额违约可能漏记。第三，前五大客户和供应商中约 70% 的名称被匿名化，供应链关系残缺，这可能是供应商渠道不显著的原因之一。第四，股权和关联交易边来自年度快照，缺少精确的生效日期。</p>
+<h2 id="s5"><span class="n">5</span>产品思路</h2>
+<p>证据指向明确的分工：年度评分负责准入与定价，图谱负责贷中预警和敞口管理。据此设计三层产品（表 4）。</p>
+<div class="tcap">表4　三层产品设计</div><div class="tbl"><table><thead><tr><th>层</th><th>功能</th><th>输入</th><th>依据</th></tr></thead><tbody><tr><td>年度评分卡</td><td>准入、定价、额度</td><td>自身财务、诉讼与治理变量</td><td>滚动外推 AUC 0.877</td></tr><tr><td>关联事件预警</td><td>贷中复核</td><td>股东、担保连带方、主要客户与应收对手方的新增诉讼、执行、票据逾期</td><td>触发后违约率 3.2 倍，中位提前 3.9 个月</td></tr><tr><td>控制圈合并管控</td><td>集中度与互保圈</td><td>持股 ≥20% 的控股关系与同一控制关系</td><td>按控制圈合并计算敞口</td></tr></tbody></table></div>
+<p>关联事件预警是核心模块。系统为每个存量客户维护三类关联方清单：持股 5% 以上的股东与实际控制人、担保与连带责任方、前五大客户与主要应收对手方；每天拉取这些主体的新增诉讼、被执行、失信和票据逾期事件，命中后冻结未用额度，并在 30 天内完成复核。按本文估计，触发客户中位提前 3.9 个月违约，这个窗口足够完成复核、追加担保或压降额度。预警卡片直接写出风险来源，例如“客户的第一大股东 6 个月前被银行提起借款诉讼”，客户经理不需要读模型解释。供应商和客户关系只进入清单展示，不单独触发，因为本文没有找到它们在中低风险客户上的增量证据。</p>
+<p>迁移到行内经营类客户时，图谱的结构不变，只需替换数据源（表 5）。经营类客户缺少可信报表，年度评分的区分度会低于本文的上市公司（本文去掉财务报表后的滚动外推 AUC 为 0.838）；关联事件预警只依赖外部公开事件，不受报表质量影响，这正是它适合经营类客户的原因。</p>
+<div class="tcap">表5　数据替换路径</div><div class="tbl"><table><thead><tr><th>本文使用的上市公司数据</th><th>经营类客户可用的替代数据</th></tr></thead><tbody><tr><td>前五大客户与供应商</td><td>增值税发票、结算流水、供应链金融平台的交易对手</td></tr><tr><td>前十大股东</td><td>工商登记股东、实际控制人、受益所有人</td></tr><tr><td>关联交易公告</td><td>工商任职与对外投资（同一法定代表人、董监高交叉任职）</td></tr><tr><td>诉讼公告</td><td>裁判文书、执行信息公开网（失信、限高、被执行）、票交所持续逾期名单</td></tr><tr><td>违约标签：首次被提起金融债务诉讼</td><td>行内 90 天以上逾期</td></tr></tbody></table></div>
+<h2 id="s6"><span class="n">6</span>总结结论</h2>
+<p>第一，关联方风险沿股权和担保链传导：控制自身财务后，股东出险与担保连带方出险的违约优势比为 1.74 和 2.12，吸收行业×年份共同冲击后仍然显著。债务人的静态暴露不稳健，供应商、同一控制和同业竞争渠道没有找到证据。</p>
+<p>第二，传导以月计。股东、担保连带方和债务人新出现债务诉讼后，企业的月度违约率升至未触发期间的 3.17 倍，中位 3.9 个月后违约；按行业×年份分层后率比为 3.03，在自身评分的中低风险段同样成立。</p>
+<p>第三，年度评分吸收不了这类短周期信号。滚动外推中，一跳至多跳关联特征、图谱风险分和关系图卷积网络都没有带来稳定的 AUC 增量；年报里的资产减值等科目已经折算了一部分关联风险。因此图谱在风控产品中的位置是贷中预警和敞口管理，而不是评分卡里的一个变量。</p>
+<p>下一步有两项工作：把年度快照改成月度事件流，用生存模型直接估计关联事件对违约风险的动态影响；接入工商、执行与票据数据，在行内经营类客户上重新估计股权、担保与应收三类关联的传导强度。本文的局限集中在代理样本、标签口径和关系完整性三方面，已在 4.3 节末说明。</p>
+<h2 id="sa"><span class="n">附录</span>稳健性与复现</h2>
+<div class="tcap">附表A1 稳健性检验汇总</div><div class="tbl"><table><thead><tr><th>检验</th><th>结果</th></tr></thead><tbody><tr><td>传导渠道：行业×年份固定效应线性概率模型</td><td>股东 +1.59 个百分点（95% CI +0.67—+2.50）；共同被告 +2.21 个百分点（95% CI +1.07—+3.35）；债务人 +0.03 个百分点（95% CI -0.53—+0.59）</td></tr><tr><td>贷中预警：行业×年份分层 Mantel-Haenszel 率比</td><td>3.03（2.20—4.01）</td></tr><tr><td>替代标签：金额 ≥1000 万元的金融债务诉讼</td><td>M1 0.934 → M5 0.934（测试正例 71）</td></tr><tr><td>替代标签：含经营性欠款诉讼的宽口径</td><td>M1 0.908 → M5 0.918（测试正例 404）</td></tr><tr><td>逻辑回归对照（固定切分）</td><td>M1 0.940 → M5 0.924</td></tr><tr><td>剔除共同被告与债务人边（滚动外推）</td><td>ΔAUC +0.0004 [-0.0059, +0.0067]</td></tr><tr><td>图谱风险分作为特征（滚动外推）</td><td>ΔAUC -0.0049 [-0.0106, +0.0008]</td></tr><tr><td>图谱风险分叠加到对数几率（滚动外推）</td><td>ΔAUC -0.0084 [-0.0165, -0.0011]</td></tr><tr><td>民营且规模低于中位数子样本（112 次违约，滚动外推）</td><td>M2 相对 M1 ΔAUC +0.0004 [-0.0062, +0.0068]</td></tr></tbody></table></div>
+<p>复现：代码按 00—16 的编号顺序运行（数据转换、下载补充数据、清洗、建图与特征、消融、情景分析、滚动外推、图谱风险分、R-GCN、描述统计、作图、案例、报告、补充分析、贷中监控、R-GCN 滚动外推、共同冲击检验），12 号脚本在 13—16 号之后再运行一次以写入全部结果。原始数据来自 CNRDS 与 CSMAR，受数据库许可限制未随代码公开。</p>
+<p>数据来源声明：本研究数据来源于中国研究数据服务平台（CNRDS）的诉讼仲裁、违规处罚、主要股东持股、关联交易、内部人交易、重要股权交易、机构持股、偿债能力与盈利能力数据库，以及国泰安（CSMAR）供应链研究数据库；行业分类来自申万宏源研究，上市公司名录来自上海、深圳、北京证券交易所。</p></main>
+</div>
+<footer><b>数据来源</b>：中国研究数据服务平台（CNRDS）诉讼仲裁、违规处罚、主要股东持股、关联交易、内部人交易、重要股权交易、机构持股、偿债能力、盈利能力数据库；国泰安（CSMAR）供应链研究数据库；申万宏源研究行业分类；沪深北证券交易所上市公司名录。原始数据受数据库许可限制未公开，本页只展示汇总结果与脱敏案例。<br>页面中的风险分位与案例仅用于方法说明，不构成对任何企业的信用评价。</footer>
+</div>
+<script>
+const DATA = {"forest": [{"name": "供应商", "or": 0.9089417633411516, "lo": 0.538569394904546, "hi": 1.5340179686447843, "p": 0.7206793879174265}, {"name": "客户", "or": 1.5116956477047396, "lo": 0.940239922180044, "hi": 2.430468731843382, "p": 0.0880720649437663}, {"name": "股东", "or": 1.7384820336015312, "lo": 1.2789101705278834, "hi": 2.363199426201937, "p": 0.000414640325136}, {"name": "对外投资", "or": 0.7555891764488, "lo": 0.3158504270932739, "hi": 1.8075486198344728, "p": 0.5288443608927897}, {"name": "同一控制", "or": 0.969778349465336, "lo": 0.6544572305645749, "hi": 1.437022930101031, "p": 0.878440407172367}, {"name": "同一关键人员", "or": 1.1236900439096804, "lo": 0.503649363015841, "hi": 2.507060283409959, "p": 0.7757771280916973}, {"name": "联营/合营/子公司", "or": 0.9665258110698604, "lo": 0.4386316176448388, "hi": 2.1297419198372816, "p": 0.9326854738019068}, {"name": "其他关联方", "or": 0.7543034748188322, "lo": 0.4882853447469419, "hi": 1.165248431567489, "p": 0.2038175986507485}, {"name": "共同被告（担保连带）", "or": 2.121341645974767, "lo": 1.586591269474678, "hi": 2.836326195364052, "p": 3.880115931484149e-07}, {"name": "债务人（应收）", "or": 1.2732924334362383, "lo": 1.0040740679091984, "hi": 1.6146952429734445, "p": 0.0462014951818454}, {"name": "同业违约率(每+1pp)", "or": 0.9851593465197084, "lo": 0.9630060839922984, "hi": 1.007822228922596, "p": 0.1975649408380304}, {"name": "相对同业营收增速", "or": 1.0854842201301331, "lo": 0.8307887268642029, "hi": 1.4182618926461663, "p": 0.5476897126687008}], "cases": [{"title": "案例1：建筑装饰企业", "t": 2023, "decision": "2024-04-30", "event": {"date": "2024-11", "case": "借款合同纠纷"}, "pct_m1": 0.7249791492910759, "pct_m4": 0.8636363636363636, "nodes": [{"id": "案例企业", "ring": 0, "risk": 0.0, "x": 0.0, "y": 0.0, "listed": true, "rels": [], "via": "", "n_events": 0}, {"id": "客户1", "ring": 1, "risk": 0.0, "x": 0.955336489125606, "y": 0.29552020666133955, "listed": false, "rels": ["客户"], "via": "", "n_events": 0}, {"id": "共同被告1", "ring": 1, "risk": 0.497, "x": 0.6795855654143412, "y": 0.7335962508631503, "listed": false, "rels": ["共同被告"], "via": "", "n_events": 1}, {"id": "共同被告2", "ring": 1, "risk": 0.497, "x": 0.22174023826245573, "y": 0.9751057720756807, "listed": false, "rels": ["共同被告"], "via": "", "n_events": 1}, {"id": "股东1", "ring": 1, "risk": 0.0, "x": -0.29552020666133955, "y": 0.955336489125606, "listed": false, "rels": ["股东"], "via": "", "n_events": 0}, {"id": "股东2", "ring": 1, "risk": 0.0, "x": -0.7335962508631501, "y": 0.6795855654143415, "listed": false, "rels": ["股东"], "via": "", "n_events": 0}, {"id": "股东3", "ring": 1, "risk": 0.0, "x": -0.9751057720756807, "y": 0.22174023826245579, "listed": false, "rels": ["股东"], "via": "", "n_events": 0}, {"id": "供应商1", "ring": 1, "risk": 0.0, "x": -0.9553364891256061, "y": -0.29552020666133927, "listed": false, "rels": ["供应商"], "via": "", "n_events": 0}, {"id": "供应商2", "ring": 1, "risk": 0.0, "x": -0.6795855654143415, "y": -0.7335962508631501, "listed": false, "rels": ["供应商"], "via": "", "n_events": 0}, {"id": "供应商3", "ring": 1, "risk": 0.0, "x": -0.22174023826245626, "y": -0.9751057720756806, "listed": false, "rels": ["供应商"], "via": "", "n_events": 0}, {"id": "供应商4", "ring": 1, "risk": 0.0, "x": 0.2955202066613392, "y": -0.9553364891256061, "listed": false, "rels": ["供应商"], "via": "", "n_events": 0}, {"id": "供应商5", "ring": 1, "risk": 0.0, "x": 0.7335962508631503, "y": -0.6795855654143412, "listed": false, "rels": ["供应商"], "via": "", "n_events": 0}, {"id": "客户2", "ring": 1, "risk": 0.0, "x": 0.9751057720756806, "y": -0.22174023826245634, "listed": false, "rels": ["客户"], "via": "", "n_events": 0}, {"id": "房地产上市公司1", "ring": 2, "risk": 8.627, "x": 1.8629061537949316, "y": 0.5762644029896121, "listed": true, "rels": ["客户"], "via": "客户1", "n_events": 9}], "edges": [{"s": "案例企业", "t": "客户1", "rel": "客户"}, {"s": "案例企业", "t": "共同被告1", "rel": "共同被告"}, {"s": "案例企业", "t": "共同被告2", "rel": "共同被告"}, {"s": "案例企业", "t": "股东1", "rel": "股东"}, {"s": "案例企业", "t": "股东2", "rel": "股东"}, {"s": "案例企业", "t": "股东3", "rel": "股东"}, {"s": "案例企业", "t": "供应商1", "rel": "供应商"}, {"s": "案例企业", "t": "供应商2", "rel": "供应商"}, {"s": "案例企业", "t": "供应商3", "rel": "供应商"}, {"s": "案例企业", "t": "供应商4", "rel": "供应商"}, {"s": "案例企业", "t": "供应商5", "rel": "供应商"}, {"s": "案例企业", "t": "客户2", "rel": "客户"}, {"s": "客户1", "t": "房地产上市公司1", "rel": "客户"}]}, {"title": "案例2：建筑材料企业", "t": 2023, "decision": "2024-04-30", "event": {"date": "2024-08", "case": "民间借贷纠纷"}, "pct_m1": 0.8994995829858216, "pct_m4": 0.9687239366138448, "nodes": [{"id": "案例企业", "ring": 0, "risk": 0.0, "x": 0.0, "y": 0.0, "listed": true, "rels": [], "via": "", "n_events": 0}, {"id": "共同被告1", "ring": 1, "risk": 2.13, "x": 0.955336489125606, "y": 0.29552020666133955, "listed": false, "rels": ["共同被告", "债务人"], "via": "", "n_events": 4}, {"id": "自然人1", "ring": 1, "risk": 1.881, "x": 0.6795855654143412, "y": 0.7335962508631503, "listed": false, "rels": ["债务人"], "via": "", "n_events": 3}, {"id": "自然人2", "ring": 1, "risk": 1.871, "x": 0.22174023826245573, "y": 0.9751057720756807, "listed": false, "rels": ["共同被告", "债务人"], "via": "", "n_events": 3}, {"id": "自然人3", "ring": 1, "risk": 1.382, "x": -0.29552020666133955, "y": 0.955336489125606, "listed": false, "rels": ["债务人"], "via": "", "n_events": 2}, {"id": "股东1", "ring": 1, "risk": 1.382, "x": -0.7335962508631501, "y": 0.6795855654143415, "listed": false, "rels": ["股东", "债务人"], "via": "", "n_events": 2}, {"id": "自然人4", "ring": 1, "risk": 0.761, "x": -0.9751057720756807, "y": 0.22174023826245579, "listed": false, "rels": ["债务人"], "via": "", "n_events": 1}, {"id": "债务人1", "ring": 1, "risk": 0.761, "x": -0.9553364891256061, "y": -0.29552020666133927, "listed": false, "rels": ["债务人"], "via": "", "n_events": 1}, {"id": "债务人2", "ring": 1, "risk": 0.761, "x": -0.6795855654143415, "y": -0.7335962508631501, "listed": false, "rels": ["债务人"], "via": "", "n_events": 1}, {"id": "债务人3", "ring": 1, "risk": 0.761, "x": -0.22174023826245626, "y": -0.9751057720756806, "listed": false, "rels": ["债务人"], "via": "", "n_events": 1}, {"id": "股东2", "ring": 1, "risk": 0.0, "x": 0.2955202066613392, "y": -0.9553364891256061, "listed": false, "rels": ["股东"], "via": "", "n_events": 0}, {"id": "供应商1", "ring": 1, "risk": 0.0, "x": 0.7335962508631503, "y": -0.6795855654143412, "listed": false, "rels": ["供应商"], "via": "", "n_events": 0}, {"id": "供应商2", "ring": 1, "risk": 0.0, "x": 0.9751057720756806, "y": -0.22174023826245634, "listed": false, "rels": ["供应商"], "via": "", "n_events": 0}], "edges": [{"s": "案例企业", "t": "共同被告1", "rel": "共同被告"}, {"s": "案例企业", "t": "自然人1", "rel": "债务人"}, {"s": "案例企业", "t": "自然人2", "rel": "共同被告"}, {"s": "案例企业", "t": "自然人3", "rel": "债务人"}, {"s": "案例企业", "t": "股东1", "rel": "股东"}, {"s": "案例企业", "t": "自然人4", "rel": "债务人"}, {"s": "案例企业", "t": "债务人1", "rel": "债务人"}, {"s": "案例企业", "t": "债务人2", "rel": "债务人"}, {"s": "案例企业", "t": "债务人3", "rel": "债务人"}, {"s": "案例企业", "t": "股东2", "rel": "股东"}, {"s": "案例企业", "t": "供应商1", "rel": "供应商"}, {"s": "案例企业", "t": "供应商2", "rel": "供应商"}]}, {"title": "案例3：医药生物企业", "t": 2023, "decision": "2024-04-30", "event": {"date": "2025-02", "case": "融资租赁合同纠纷"}, "pct_m1": 0.8056713928273561, "pct_m4": 0.8732276897414513, "nodes": [{"id": "案例企业", "ring": 0, "risk": 0.0, "x": 0.0, "y": 0.0, "listed": true, "rels": [], "via": "", "n_events": 0}, {"id": "共同被告1", "ring": 1, "risk": 0.948, "x": 0.955336489125606, "y": 0.29552020666133955, "listed": false, "rels": ["共同被告"], "via": "", "n_events": 2}, {"id": "债务人1", "ring": 1, "risk": 0.891, "x": 0.54187348154955, "y": 0.84046007043367, "listed": false, "rels": ["债务人"], "via": "", "n_events": 3}, {"id": "债务人2", "ring": 1, "risk": 0.666, "x": -0.12513815029647243, "y": 0.9921393265768561, "listed": false, "rels": ["债务人"], "via": "", "n_events": 2}, {"id": "债务人3", "ring": 1, "risk": 0.224, "x": -0.7335962508631501, "y": 0.6795855654143415, "listed": false, "rels": ["债务人"], "via": "", "n_events": 1}, {"id": "共同被告2", "ring": 1, "risk": 0.186, "x": -0.9987965126367918, "y": 0.049046165442193826, "listed": false, "rels": ["共同被告"], "via": "", "n_events": 1}, {"id": "股东1", "ring": 1, "risk": 0.0, "x": -0.7966487857609067, "y": -0.6044424804277682, "listed": false, "rels": ["股东", "联营/合营"], "via": "", "n_events": 0}, {"id": "自然人1", "ring": 1, "risk": 0.0, "x": -0.22174023826245626, "y": -0.9751057720756806, "listed": false, "rels": ["股东"], "via": "", "n_events": 0}, {"id": "股东2", "ring": 1, "risk": 0.0, "x": 0.4569230310872414, "y": -0.8895062358758637, "listed": false, "rels": ["股东"], "via": "", "n_events": 0}, {"id": "股东3", "ring": 1, "risk": 0.0, "x": 0.9217869360573788, "y": -0.38769684614908817, "listed": false, "rels": ["股东"], "via": "", "n_events": 0}], "edges": [{"s": "案例企业", "t": "共同被告1", "rel": "共同被告"}, {"s": "案例企业", "t": "债务人1", "rel": "债务人"}, {"s": "案例企业", "t": "债务人2", "rel": "债务人"}, {"s": "案例企业", "t": "债务人3", "rel": "债务人"}, {"s": "案例企业", "t": "共同被告2", "rel": "共同被告"}, {"s": "案例企业", "t": "股东1", "rel": "股东"}, {"s": "案例企业", "t": "自然人1", "rel": "股东"}, {"s": "案例企业", "t": "股东2", "rel": "股东"}, {"s": "案例企业", "t": "股东3", "rel": "股东"}]}]};
+(function theme(){
+  const root=document.documentElement,btn=document.getElementById('themeBtn');
+  let saved=null;try{saved=localStorage.getItem('theme')}catch(e){}
+  if(saved)root.setAttribute('data-theme',saved);
+  btn.addEventListener('click',()=>{
+    const dark=root.getAttribute('data-theme')==='dark'||(!root.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);
+    const next=dark?'light':'dark';root.setAttribute('data-theme',next);try{localStorage.setItem('theme',next)}catch(e){}
+  });
+})();
+function el(tag,attrs,parent){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+// 传导强度森林图（对数刻度）
+function forest(id,rows){
+  const box=document.getElementById(id);if(!box)return;box.innerHTML='';
+  const W=720,rowH=30,top=16,left=190,right=110,H=top+rows.length*rowH+36;
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'分关系类型的风险传导优势比'},box);
+  const lo=Math.log(0.3),hi=Math.log(4),x=v=>left+(Math.log(v)-lo)/(hi-lo)*(W-left-right);
+  [0.5,1,2,3].forEach(t=>{el('line',{x1:x(t),x2:x(t),y1:top-6,y2:H-30,stroke:t===1?css('--muted'):css('--rule'),'stroke-dasharray':t===1?'4 3':'0'},svg);
+    const tx=el('text',{x:x(t),y:H-12,'text-anchor':'middle','font-size':12},svg);tx.textContent=t});
+  rows.forEach((r,i)=>{const y=top+i*rowH+rowH/2;const sig=r.lo>1,neg=r.hi<1;const c=sig?css('--accent'):(neg?css('--blue'):css('--muted'));
+    const lab=el('text',{x:left-12,y:y+4,'text-anchor':'end','font-size':13},svg);lab.textContent=r.name;
+    el('line',{x1:x(Math.max(r.lo,0.3)),x2:x(Math.min(r.hi,4)),y1:y,y2:y,stroke:c,'stroke-width':2.4,'stroke-linecap':'round'},svg);
+    el('circle',{cx:x(r.or),cy:y,r:5,fill:c},svg);
+    const v=el('text',{x:W-right+10,y:y+4,'font-size':12.5,'font-family':'IBM Plex Mono'},svg);v.textContent=r.or.toFixed(2)+(r.p<0.01?'***':r.p<0.05?'**':r.p<0.1?'*':'');v.style.fill=sig?css('--accent'):css('--ink-2')});
+}
+// 消融增量点估计+区间
+function deltas(id,rows){
+  const box=document.getElementById(id);if(!box)return;box.innerHTML='';
+  const W=720,rowH=32,top=16,left=250,right=90,H=top+rows.length*rowH+36;
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'相对基线的AUC增量'},box);
+  const mn=Math.min(-0.02,...rows.map(r=>r.lo)),mx=Math.max(0.03,...rows.map(r=>r.hi));
+  const x=v=>left+(v-mn)/(mx-mn)*(W-left-right);
+  [-0.02,-0.01,0,0.01,0.02,0.03].filter(t=>t>=mn&&t<=mx).forEach(t=>{el('line',{x1:x(t),x2:x(t),y1:top-6,y2:H-30,stroke:t===0?css('--muted'):css('--rule'),'stroke-dasharray':t===0?'4 3':'0'},svg);
+    const tx=el('text',{x:x(t),y:H-12,'text-anchor':'middle','font-size':12},svg);tx.textContent=(t>0?'+':'')+t.toFixed(2)});
+  rows.forEach((r,i)=>{const y=top+i*rowH+rowH/2;const c=r.lo>0?css('--accent'):css('--muted');
+    const lab=el('text',{x:left-12,y:y+4,'text-anchor':'end','font-size':12.5},svg);lab.textContent=r.name;
+    el('line',{x1:x(r.lo),x2:x(r.hi),y1:y,y2:y,stroke:c,'stroke-width':2.4,'stroke-linecap':'round'},svg);
+    el('circle',{cx:x(r.d),cy:y,r:5,fill:c},svg);
+    const v=el('text',{x:W-right+10,y:y+4,'font-size':12.5,'font-family':'IBM Plex Mono'},svg);v.textContent=(r.d>0?'+':'')+r.d.toFixed(4);v.style.fill=c});
+}
+// 案例关联网络
+function explorer(){
+  const cases=DATA.cases||[];const tabs=document.getElementById('exTabs'),g=document.getElementById('exGraph'),side=document.getElementById('exSide');
+  if(!tabs||!cases.length)return;
+  cases.forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.textContent=c.title;b.onclick=()=>show(i);tabs.appendChild(b)});
+  function info(c,n){
+    const k=n.n_events||0;
+    side.innerHTML=`<h4>${n.id}</h4><div class="meta">${n.ring===0?'目标企业':(n.ring===1?'一跳关联：'+(n.rels||[]).join('、'):'二跳关联（经 '+(n.via||'')+'，关系：'+(n.rels||[]).join('、')+'）')}</div>`+
+      (k?`<p style="margin:8px 0 2px">决策日前 36 个月内作为被告卷入金融债务或经营性欠款诉讼 <b style="color:var(--accent)">${k}</b> 次。</p>`:`<p class="note">决策日前 36 个月内无金融债务或经营性欠款被诉记录。</p>`)+
+      `<p class="note" style="margin-top:14px">点击其他节点查看；橙色节点为有风险事件的关联方。</p>`;
+  }
+  function show(i){
+    [...tabs.children].forEach((b,j)=>b.classList.toggle('on',i===j));
+    const c=cases[i];g.innerHTML='';
+    const W=640,H=440,mx=118,my=36;
+    const xs=c.nodes.map(n=>n.x),ys=c.nodes.map(n=>n.y);
+    const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+    const s=Math.min((W-2*mx)/Math.max(x1-x0,1e-6),(H-2*my)/Math.max(y1-y0,1e-6));
+    const ox=mx-x0*s+((W-2*mx)-(x1-x0)*s)/2,oy=my-y0*s+((H-2*my)-(y1-y0)*s)/2;
+    const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':c.title+' 关联网络'},g);
+    const pos={};c.nodes.forEach(n=>pos[n.id]=[ox+n.x*s,oy+n.y*s]);
+    const f0=c.nodes.find(n=>n.ring===0),cx=pos[f0.id][0],cy=pos[f0.id][1];
+    c.edges.forEach(e=>{const a=pos[e.s],b=pos[e.t];if(!a||!b)return;const ge=el('g',{class:'edge'},svg);
+      el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1]},ge);const t=el('text',{x:a[0]+(b[0]-a[0])*0.55,y:a[1]+(b[1]-a[1])*0.55-3,'text-anchor':'middle'},ge);t.textContent=e.rel});
+    c.nodes.forEach(n=>{const [x,y]=pos[n.id];const gn=el('g',{class:'node',tabindex:0},svg);
+      const col=n.ring===0?css('--ink'):(n.risk>0?css('--accent'):css('--muted'));const r=n.ring===0?11:6+Math.min(n.risk,3)*1.6;
+      const sh=n.listed?el('rect',{x:x-r,y:y-r,width:2*r,height:2*r,fill:col,rx:2,style:`transform-origin:${x}px ${y}px`},gn):el('circle',{cx:x,cy:y,r:r,fill:col,style:`transform-origin:${x}px ${y}px`},gn);
+      let t;
+      if(n.ring===0){t=el('text',{x:x,y:y+r+14,'text-anchor':'middle','font-weight':700},gn);}
+      else{const a=Math.atan2(y-cy,x-cx);t=el('text',{x:x+(r+5)*Math.cos(a),y:y+(r+5)*Math.sin(a)+4,'text-anchor':Math.cos(a)>=0?'start':'end'},gn);}
+      t.textContent=n.id;
+      gn.addEventListener('click',()=>info(c,n));gn.addEventListener('keydown',ev=>{if(ev.key==='Enter')info(c,n)})});
+    side.innerHTML=`<h4>${c.title}</h4><div class="meta">决策日 ${c.decision} ｜ 首次被提起金融债务诉讼 ${c.event.date}（${c.event.case}）</div>
+      <div class="rank"><div><div class="v">${(c.pct_m1*100).toFixed(1)}</div><div class="l">仅用自身特征的风险分位</div></div>
+      <div><div class="v" style="color:var(--accent)">${(c.pct_m4*100).toFixed(1)}</div><div class="l">加入关联图谱后的风险分位</div></div></div>
+      <p class="note">分位越高风险越高（同年样本内排序）。点击网络中的节点查看该关联方在决策日之前的被诉记录。</p>`;
+  }
+  show(0);
+}
+function draw(){forest('forestChart',DATA.forest||[]);deltas('deltaChart',DATA.deltas||[]);}
+draw();explorer();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
+new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+// 目录高亮
+const links=[...document.querySelectorAll('nav.toc a')];const secs=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+addEventListener('scroll',()=>{let k=0;secs.forEach((s,i)=>{if(s.getBoundingClientRect().top<120)k=i});links.forEach((a,i)=>a.classList.toggle('on',i===k))},{passive:true});
+</script>
+</body>
+</html>

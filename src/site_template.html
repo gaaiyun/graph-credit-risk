@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>关联图谱风控模型</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%231c1f23%22/%3E%3Cpath d=%22M9 22L16 10L23 22%22 stroke=%22%23f0773a%22 stroke-width=%222.4%22 fill=%22none%22/%3E%3Ccircle cx=%2216%22 cy=%2210%22 r=%223%22 fill=%22%23f0773a%22/%3E%3Ccircle cx=%229%22 cy=%2222%22 r=%222.6%22 fill=%22%23ebe6dc%22/%3E%3Ccircle cx=%2223%22 cy=%2222%22 r=%222.6%22 fill=%22%23ebe6dc%22/%3E%3C/svg%3E">
+<meta name="description" content="基于应用图谱信息的经营类客户风控模型构建：以A股非金融上市公司关联网络为代理样本的数据分析报告">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f6f3ec;--paper-2:#eee8dc;--card:#fbf9f4;--ink:#1c1f23;--ink-2:#454b54;--muted:#7b8794;--rule:#d8d1c3;
+  --accent:#c2410c;--accent-soft:#f3dccd;--blue:#2563eb;--green:#15803d;--shadow:0 1px 0 rgba(28,31,35,.04),0 8px 24px -16px rgba(28,31,35,.25);
+  --serif:"Noto Serif SC","Songti SC","SimSun",serif;--sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#141619;--paper-2:#1b1e22;--card:#1a1d21;--ink:#ebe6dc;--ink-2:#bdb7ab;--muted:#8b919a;--rule:#2d3137;
+  --accent:#f0773a;--accent-soft:#3a2418;--blue:#6ea0ff;--green:#4ade80;--shadow:0 8px 24px -16px rgba(0,0,0,.6);}}
+:root[data-theme="dark"]{
+  --paper:#141619;--paper-2:#1b1e22;--card:#1a1d21;--ink:#ebe6dc;--ink-2:#bdb7ab;--muted:#8b919a;--rule:#2d3137;
+  --accent:#f0773a;--accent-soft:#3a2418;--blue:#6ea0ff;--green:#4ade80;--shadow:0 8px 24px -16px rgba(0,0,0,.6);}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.85;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--ink) 6%,transparent) 1px,transparent 0);background-size:22px 22px}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header.mast{border-bottom:1px solid var(--rule);padding:18px 0 34px;position:relative}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.kicker b{color:var(--accent);font-weight:500}
+h1.title{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5.2vw,58px);line-height:1.14;letter-spacing:-.01em;margin:26px 0 12px;max-width:17em}
+h1.title em{font-style:normal;color:var(--accent)}
+.sub{font-family:var(--serif);font-size:clamp(16px,2vw,20px);color:var(--ink-2);margin:0 0 26px;max-width:40em}
+.lede{font-size:17px;max-width:46em;border-left:3px solid var(--accent);padding:4px 0 4px 16px;color:var(--ink)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:30px;border-top:2px solid var(--ink);border-bottom:1px solid var(--rule)}
+.kpi{padding:16px 14px 14px;border-right:1px solid var(--rule)}
+.kpi:last-child{border-right:0}
+.kpi .v{font-family:var(--serif);font-weight:900;font-size:clamp(26px,3.4vw,40px);line-height:1.05}
+.kpi .v small{font-size:.45em;font-weight:600;color:var(--muted);margin-left:2px}
+.kpi .l{font-size:13px;color:var(--ink-2);margin-top:6px;line-height:1.5}
+.theme-btn{background:none;border:1px solid var(--rule);color:var(--ink-2);font-family:var(--mono);font-size:11px;padding:2px 10px;border-radius:999px;cursor:pointer;margin-left:12px;letter-spacing:.05em}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px;padding:40px 0 80px}
+nav.toc{position:sticky;top:24px;align-self:start;font-size:13.5px;line-height:1.6}
+nav.toc .h{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted);margin-bottom:10px}
+nav.toc a{display:block;color:var(--ink-2);text-decoration:none;padding:5px 0 5px 12px;border-left:2px solid var(--rule)}
+nav.toc a.l2{padding-left:24px;font-size:12.5px;color:var(--muted)}
+nav.toc a:hover,nav.toc a.on{color:var(--accent);border-left-color:var(--accent)}
+main{max-width:780px;min-width:0}
+main h2{font-family:var(--serif);font-weight:900;font-size:clamp(24px,3vw,32px);margin:56px 0 8px;line-height:1.25;display:flex;gap:14px;align-items:baseline}
+main h2 .n{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--accent);letter-spacing:.06em}
+main h3{font-family:var(--serif);font-weight:600;font-size:20px;margin:34px 0 6px}
+main p{margin:10px 0;color:var(--ink)}
+main p.note{font-size:13px;color:var(--muted);line-height:1.7}
+figure{margin:22px 0 26px}
+figure .card{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:10px;box-shadow:var(--shadow)}
+figure img{width:100%;height:auto;display:block}
+figcaption{font-size:13px;color:var(--ink-2);margin-top:9px;line-height:1.65}
+figcaption b{font-family:var(--serif);color:var(--ink)}
+.tbl{overflow-x:auto;margin:18px 0 24px;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--rule)}
+th:first-child,td:first-child{text-align:left}
+thead th{font-weight:700;font-size:12.5px;color:var(--ink-2);border-bottom:1px solid var(--ink)}
+tr.hl td{background:var(--accent-soft)}
+.tcap{font-family:var(--serif);font-size:14px;font-weight:600;margin:24px 0 6px}
+.callout{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--accent);padding:14px 18px;border-radius:4px;margin:22px 0}
+.callout .t{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--accent);margin-bottom:4px}
+.svgchart{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:14px 14px 6px;box-shadow:var(--shadow)}
+.svgchart svg{width:100%;height:auto;display:block}
+.svgchart text{font-family:var(--sans);fill:var(--ink-2)}
+.explorer{background:var(--card);border:1px solid var(--rule);border-radius:6px;box-shadow:var(--shadow);overflow:hidden}
+.tabs{display:flex;border-bottom:1px solid var(--rule);overflow-x:auto}
+.tabs button{flex:1;min-width:120px;background:none;border:0;border-right:1px solid var(--rule);padding:11px 12px;font-family:var(--sans);font-size:13.5px;color:var(--ink-2);cursor:pointer;text-align:left}
+.tabs button:last-child{border-right:0}
+.tabs button.on{background:var(--paper-2);color:var(--ink);box-shadow:inset 0 -2px 0 var(--accent)}
+.ex-body{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}
+.ex-graph{border-right:1px solid var(--rule);padding:8px}
+.ex-graph svg{width:100%;height:auto;display:block}
+.ex-side{padding:14px 16px;font-size:13.5px;max-height:520px;overflow:auto}
+.ex-side h4{font-family:var(--serif);margin:2px 0 6px;font-size:16px}
+.ex-side .meta{font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.7}
+.ex-side ul{padding-left:18px;margin:6px 0}
+.rank{display:flex;gap:10px;margin:10px 0}
+.rank>div{flex:1;border:1px solid var(--rule);border-radius:4px;padding:8px 10px}
+.rank .v{font-family:var(--serif);font-weight:900;font-size:22px}
+.rank .l{font-size:11.5px;color:var(--muted)}
+.node circle,.node rect{cursor:pointer;transition:transform .15s}
+.node:hover circle,.node:hover rect{transform:scale(1.25)}
+.node text{font-size:12.5px;fill:var(--ink);pointer-events:none}
+.edge line{stroke:var(--rule);stroke-width:1.3}
+.edge text{font-size:11px;fill:var(--muted)}
+footer{border-top:1px solid var(--rule);padding:26px 0 40px;font-size:12.5px;color:var(--muted);line-height:1.8}
+.reveal{opacity:0;transform:translateY(10px);animation:rv .7s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes rv{to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.reveal{animation:none;opacity:1;transform:none}}
+@media (max-width:900px){.layout{grid-template-columns:1fr;gap:0}nav.toc{display:none}.kpis{grid-template-columns:repeat(2,1fr)}
+  .kpi:nth-child(2){border-right:0}.kpi:nth-child(-n+2){border-bottom:1px solid var(--rule)}.ex-body{grid-template-columns:1fr}.ex-graph{border-right:0;border-bottom:1px solid var(--rule)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="mast">
+  <div class="kicker reveal"><span><b>数据分析赛道</b> · 赛题：基于应用图谱信息的经营类客户风控模型的构建</span><span>{{DATE}}<button class="theme-btn" id="themeBtn" type="button">深 / 浅</button></span></div>
+  <h1 class="title reveal" style="animation-delay:.08s">风险沿着<em>股权与担保链</em>传导：一个关联图谱增强的企业信用风控模型</h1>
+  <p class="sub reveal" style="animation-delay:.16s">以 A 股非金融上市公司 2016—2023 年的逐年异质关联网络为代理样本</p>
+  <p class="lede reveal" style="animation-delay:.24s">{{LEDE}}</p>
+  <div class="kpis">{{KPIS}}</div>
+</header>
+<div class="layout">
+  <nav class="toc" id="toc"><div class="h">目录</div>{{TOC}}</nav>
+  <main id="main">{{CONTENT}}</main>
+</div>
+<footer>{{FOOTER}}</footer>
+</div>
+<script>
+const DATA = {{DATA_JSON}};
+(function theme(){
+  const root=document.documentElement,btn=document.getElementById('themeBtn');
+  let saved=null;try{saved=localStorage.getItem('theme')}catch(e){}
+  if(saved)root.setAttribute('data-theme',saved);
+  btn.addEventListener('click',()=>{
+    const dark=root.getAttribute('data-theme')==='dark'||(!root.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);
+    const next=dark?'light':'dark';root.setAttribute('data-theme',next);try{localStorage.setItem('theme',next)}catch(e){}
+  });
+})();
+function el(tag,attrs,parent){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+// 传导强度森林图（对数刻度）
+function forest(id,rows){
+  const box=document.getElementById(id);if(!box)return;box.innerHTML='';
+  const W=720,rowH=30,top=16,left=190,right=110,H=top+rows.length*rowH+36;
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'分关系类型的风险传导优势比'},box);
+  const lo=Math.log(0.3),hi=Math.log(4),x=v=>left+(Math.log(v)-lo)/(hi-lo)*(W-left-right);
+  [0.5,1,2,3].forEach(t=>{el('line',{x1:x(t),x2:x(t),y1:top-6,y2:H-30,stroke:t===1?css('--muted'):css('--rule'),'stroke-dasharray':t===1?'4 3':'0'},svg);
+    const tx=el('text',{x:x(t),y:H-12,'text-anchor':'middle','font-size':12},svg);tx.textContent=t});
+  rows.forEach((r,i)=>{const y=top+i*rowH+rowH/2;const sig=r.lo>1,neg=r.hi<1;const c=sig?css('--accent'):(neg?css('--blue'):css('--muted'));
+    const lab=el('text',{x:left-12,y:y+4,'text-anchor':'end','font-size':13},svg);lab.textContent=r.name;
+    el('line',{x1:x(Math.max(r.lo,0.3)),x2:x(Math.min(r.hi,4)),y1:y,y2:y,stroke:c,'stroke-width':2.4,'stroke-linecap':'round'},svg);
+    el('circle',{cx:x(r.or),cy:y,r:5,fill:c},svg);
+    const v=el('text',{x:W-right+10,y:y+4,'font-size':12.5,'font-family':'IBM Plex Mono'},svg);v.textContent=r.or.toFixed(2)+(r.p<0.01?'***':r.p<0.05?'**':r.p<0.1?'*':'');v.style.fill=sig?css('--accent'):css('--ink-2')});
+}
+// 消融增量点估计+区间
+function deltas(id,rows){
+  const box=document.getElementById(id);if(!box)return;box.innerHTML='';
+  const W=720,rowH=32,top=16,left=250,right=90,H=top+rows.length*rowH+36;
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'相对基线的AUC增量'},box);
+  const mn=Math.min(-0.02,...rows.map(r=>r.lo)),mx=Math.max(0.03,...rows.map(r=>r.hi));
+  const x=v=>left+(v-mn)/(mx-mn)*(W-left-right);
+  [-0.02,-0.01,0,0.01,0.02,0.03].filter(t=>t>=mn&&t<=mx).forEach(t=>{el('line',{x1:x(t),x2:x(t),y1:top-6,y2:H-30,stroke:t===0?css('--muted'):css('--rule'),'stroke-dasharray':t===0?'4 3':'0'},svg);
+    const tx=el('text',{x:x(t),y:H-12,'text-anchor':'middle','font-size':12},svg);tx.textContent=(t>0?'+':'')+t.toFixed(2)});
+  rows.forEach((r,i)=>{const y=top+i*rowH+rowH/2;const c=r.lo>0?css('--accent'):css('--muted');
+    const lab=el('text',{x:left-12,y:y+4,'text-anchor':'end','font-size':12.5},svg);lab.textContent=r.name;
+    el('line',{x1:x(r.lo),x2:x(r.hi),y1:y,y2:y,stroke:c,'stroke-width':2.4,'stroke-linecap':'round'},svg);
+    el('circle',{cx:x(r.d),cy:y,r:5,fill:c},svg);
+    const v=el('text',{x:W-right+10,y:y+4,'font-size':12.5,'font-family':'IBM Plex Mono'},svg);v.textContent=(r.d>0?'+':'')+r.d.toFixed(4);v.style.fill=c});
+}
+// 案例关联网络
+function explorer(){
+  const cases=DATA.cases||[];const tabs=document.getElementById('exTabs'),g=document.getElementById('exGraph'),side=document.getElementById('exSide');
+  if(!tabs||!cases.length)return;
+  cases.forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.textContent=c.title;b.onclick=()=>show(i);tabs.appendChild(b)});
+  function info(c,n){
+    const k=n.n_events||0;
+    side.innerHTML=`<h4>${n.id}</h4><div class="meta">${n.ring===0?'目标企业':(n.ring===1?'一跳关联：'+(n.rels||[]).join('、'):'二跳关联（经 '+(n.via||'')+'，关系：'+(n.rels||[]).join('、')+'）')}</div>`+
+      (k?`<p style="margin:8px 0 2px">决策日前 36 个月内作为被告卷入金融债务或经营性欠款诉讼 <b style="color:var(--accent)">${k}</b> 次。</p>`:`<p class="note">决策日前 36 个月内无金融债务或经营性欠款被诉记录。</p>`)+
+      `<p class="note" style="margin-top:14px">点击其他节点查看；橙色节点为有风险事件的关联方。</p>`;
+  }
+  function show(i){
+    [...tabs.children].forEach((b,j)=>b.classList.toggle('on',i===j));
+    const c=cases[i];g.innerHTML='';
+    const W=640,H=440,mx=118,my=36;
+    const xs=c.nodes.map(n=>n.x),ys=c.nodes.map(n=>n.y);
+    const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+    const s=Math.min((W-2*mx)/Math.max(x1-x0,1e-6),(H-2*my)/Math.max(y1-y0,1e-6));
+    const ox=mx-x0*s+((W-2*mx)-(x1-x0)*s)/2,oy=my-y0*s+((H-2*my)-(y1-y0)*s)/2;
+    const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':c.title+' 关联网络'},g);
+    const pos={};c.nodes.forEach(n=>pos[n.id]=[ox+n.x*s,oy+n.y*s]);
+    const f0=c.nodes.find(n=>n.ring===0),cx=pos[f0.id][0],cy=pos[f0.id][1];
+    c.edges.forEach(e=>{const a=pos[e.s],b=pos[e.t];if(!a||!b)return;const ge=el('g',{class:'edge'},svg);
+      el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1]},ge);const t=el('text',{x:a[0]+(b[0]-a[0])*0.55,y:a[1]+(b[1]-a[1])*0.55-3,'text-anchor':'middle'},ge);t.textContent=e.rel});
+    c.nodes.forEach(n=>{const [x,y]=pos[n.id];const gn=el('g',{class:'node',tabindex:0},svg);
+      const col=n.ring===0?css('--ink'):(n.risk>0?css('--accent'):css('--muted'));const r=n.ring===0?11:6+Math.min(n.risk,3)*1.6;
+      const sh=n.listed?el('rect',{x:x-r,y:y-r,width:2*r,height:2*r,fill:col,rx:2,style:`transform-origin:${x}px ${y}px`},gn):el('circle',{cx:x,cy:y,r:r,fill:col,style:`transform-origin:${x}px ${y}px`},gn);
+      let t;
+      if(n.ring===0){t=el('text',{x:x,y:y+r+14,'text-anchor':'middle','font-weight':700},gn);}
+      else{const a=Math.atan2(y-cy,x-cx);t=el('text',{x:x+(r+5)*Math.cos(a),y:y+(r+5)*Math.sin(a)+4,'text-anchor':Math.cos(a)>=0?'start':'end'},gn);}
+      t.textContent=n.id;
+      gn.addEventListener('click',()=>info(c,n));gn.addEventListener('keydown',ev=>{if(ev.key==='Enter')info(c,n)})});
+    side.innerHTML=`<h4>${c.title}</h4><div class="meta">决策日 ${c.decision} ｜ 首次被提起金融债务诉讼 ${c.event.date}（${c.event.case}）</div>
+      <div class="rank"><div><div class="v">${(c.pct_m1*100).toFixed(1)}</div><div class="l">仅用自身特征的风险分位</div></div>
+      <div><div class="v" style="color:var(--accent)">${(c.pct_m4*100).toFixed(1)}</div><div class="l">加入关联图谱后的风险分位</div></div></div>
+      <p class="note">分位越高风险越高（同年样本内排序）。点击网络中的节点查看该关联方在决策日之前的被诉记录。</p>`;
+  }
+  show(0);
+}
+function draw(){forest('forestChart',DATA.forest||[]);deltas('deltaChart',DATA.deltas||[]);}
+draw();explorer();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
+new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+// 目录高亮
+const links=[...document.querySelectorAll('nav.toc a')];const secs=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+addEventListener('scroll',()=>{let k=0;secs.forEach((s,i)=>{if(s.getBoundingClientRect().top<120)k=i});links.forEach((a,i)=>a.classList.toggle('on',i===k))},{passive:true});
+</script>
+</body>
+</html>
