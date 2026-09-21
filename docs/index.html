@@ -36,6 +36,8 @@ h1.title em{font-style:normal;color:var(--accent)}
 .sub{font-family:var(--serif);font-size:clamp(16px,2vw,20px);color:var(--ink-2);margin:0 0 26px;max-width:40em}
 .lede{font-size:17px;max-width:46em;border-left:3px solid var(--accent);padding:4px 0 4px 16px;color:var(--ink)}
 .cta{display:inline-flex;align-items:center;gap:10px;margin-top:18px;background:var(--ink);color:var(--paper);text-decoration:none;border-radius:999px;padding:10px 18px;font-weight:700;font-size:15px;box-shadow:var(--shadow);transition:transform .15s}
+.ctas{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.ctas .cta{margin-top:0}
+.cta.alt{background:transparent;color:var(--ink);border:1px solid var(--ink);box-shadow:none}
 .cta:hover{transform:translateY(-1px)}.cta span{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;opacity:.75}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:30px;border-top:2px solid var(--ink);border-bottom:1px solid var(--rule)}
 .kpi{padding:16px 14px 14px;border-right:1px solid var(--rule)}
@@ -109,7 +111,10 @@ footer{border-top:1px solid var(--rule);padding:26px 0 40px;font-size:12.5px;col
   <h1 class="title reveal" style="animation-delay:.08s"><em>关联事件预警</em>与风险归因：一个关联图谱增强的经营类客户风控模型</h1>
   <p class="sub reveal" style="animation-delay:.16s">以 A 股非金融上市公司 2016—2023 年的逐年异质关联网络为代理样本</p>
   <p class="lede reveal" style="animation-delay:.24s">关联方新出现债务诉讼后，企业月度违约率是未触发期间的 <b>3.17 倍</b>，中位 <b>3.9 个月</b>后违约；按触发渠道归因，客户或担保连带方被起诉、关联方被执行或失信触发的预警，命中率是其余预警的 <b>3.1 倍</b>。关联图谱最适合用来预警和解释风险来源，评分卡仍由企业自身信息负责。</p>
-  <a class="cta reveal" style="animation-delay:.3s" href="app.html">打开产品原型：关联风险全景 →<span>全景视图 · 预警工作台 · 情景推演</span></a>
+  <div class="ctas reveal" style="animation-delay:.3s">
+    <a class="cta" href="app.html">打开产品原型：关联风险全景 →<span>全景视图 · 预警工作台 · 情景推演</span></a>
+    <a class="cta alt" href="graph/">打开全量关联图谱 →<span>2016—2023 · 搜索定位 · 二跳路径</span></a>
+  </div>
   <div class="kpis"><div class="kpi reveal" style="animation-delay:0.30s"><div class="v">3.17<small>×</small></div><div class="l">关联方新出现债务诉讼后的月度违约率之比 · 中位提前 3.9 个月</div></div><div class="kpi reveal" style="animation-delay:0.37s"><div class="v">9.4<small>×</small></div><div class="l">月度前 5% 预警名单的 6 个月命中率 / 基准 · 覆盖 54% 违约</div></div><div class="kpi reveal" style="animation-delay:0.44s"><div class="v">3.1<small>×</small></div><div class="l">优先复核预警（客户/担保连带方被诉、关联方被执行或失信）命中率 / 其余预警</div></div><div class="kpi reveal" style="animation-delay:0.51s"><div class="v">29,892</div><div class="l">企业-年样本 · 517 次首次违约 · 35.6 万企业-月</div></div></div>
 </header>
 <div class="layout">
@@ -175,9 +180,10 @@ footer{border-top:1px solid var(--rule);padding:26px 0 40px;font-size:12.5px;col
 <h3 id="h14">4.4 局限</h3>
 <p>第一，代理样本是规模大、信息透明的上市公司，自身财务的解释力远高于经营类客户。第二，违约标签是被提起诉讼，不等于逾期，诉讼披露有重要性门槛，小额违约可能漏记。第三，前五大客户和供应商中约 70% 的名称被匿名化，票据逾期数据也未能纳入，关联网络和风险事件都不完整。第四，股权和关联交易边来自年度快照，缺少精确生效日期；预警分级的渠道由测试期观察得到，上线前需要在行内数据上重新校准。</p>
 <h2 id="s5"><span class="n">5</span>产品思路</h2>
-<p>产品围绕两个问题设计：关联方出事时哪些客户需要马上复核，以及每个客户的风险从哪里来。我们做了可交互的原型“关联风险全景”（网页版可直接操作）。预警工作台每月列出动态评分前 5% 的客户，按触发渠道分两档：客户或担保连带方被起诉、关联方被执行或失信的列为优先复核（历史命中率约 16%），其余为常规复核（约 5%），可按复核等级、渠道、行业和年份筛选。全景视图以客户为中心展示股权、担保、交易和二跳关联网络，按月回放风险事件在网络中的出现，并给出月度风险分曲线与 SHAP 归因（图 7）。情景推演在客户当前违约概率上叠加假设的关联事件，按样本外事件乘数给出调整后的概率和建议动作。另附全量关联图谱浏览器（实名，离线打开）：2016—2023 年每个主体都是可点击的节点，可按名称或代码定位，查看关联方和二跳传导路径。</p>
+<p>产品围绕两个问题设计：关联方出事时哪些客户需要马上复核，以及每个客户的风险从哪里来。我们做了可交互的原型“关联风险全景”（网页版可直接操作）。预警工作台每月列出动态评分前 5% 的客户，按触发渠道分两档：客户或担保连带方被起诉、关联方被执行或失信的列为优先复核（历史命中率约 16%），其余为常规复核（约 5%），可按复核等级、渠道、行业和年份筛选。全景视图以客户为中心展示股权、担保、交易和二跳关联网络，按月回放风险事件在网络中的出现，并给出月度风险分曲线与 SHAP 归因（图 7）。情景推演在客户当前违约概率上叠加假设的关联事件，按样本外事件乘数给出调整后的概率和建议动作。另附全量关联图谱浏览器（实名，gaaiyun.github.io/graph-credit-risk/graph）：2016—2023 年每个主体都是可点击的节点，可按名称或代码定位，查看关联方和二跳传导路径。</p>
 <figure><div class="card"><img src="assets/fig8_prototype.png" alt="产品原型：关联风险全景视图（样本企业已脱敏）" loading="lazy"></div><figcaption><b>图7</b>　产品原型：关联风险全景视图（样本企业已脱敏）</figcaption></figure>
 <div class="callout"><div class="t">产品原型</div><b><a href="app.html">打开“关联风险全景”产品原型 →</a></b> 全景视图、预警工作台、情景推演与方法证据四个模块都可以直接操作。</div>
+<div class="callout"><div class="t">全量关联图谱</div><b><a href="graph/">打开“关联图谱全景” →</a></b> 2016—2023 年逐年建模图谱，每个主体一个节点，可按名称或代码定位，查看关联方和二跳传导路径。</div>
 <p>业务上分三层落地。第一层是年度评分卡，只用自身财务、诉讼与治理变量做准入、定价和额度。第二层是关联事件预警与分级，是本方案的核心：为每个存量客户维护持股 5% 以上的股东与实际控制人、担保与连带责任方、前五大客户与主要应收对手方三类清单，每日拉取新增诉讼、被执行、失信和票据逾期事件；优先复核的客户冻结未用额度并在 30 天内完成复核，常规复核的客户提高监测频率。按本文估计，触发客户中位提前 3.9 个月违约，足够完成复核、追加担保或压降额度。第三层是控制圈合并管控，把持股 20% 以上的控股关系与同一控制关系连成的控制圈合并计算敞口。迁移到行内经营类客户时图谱结构不变，只需替换数据源（表 5）；经营类客户缺少可信报表，只依赖外部公开事件的第二层受影响最小。</p>
 <div class="tcap">表5　迁移到经营类客户的数据替换路径</div><div class="tbl"><table><thead><tr><th>本文使用的上市公司数据</th><th>经营类客户可用的替代数据</th></tr></thead><tbody><tr><td>前五大客户与供应商</td><td>增值税发票、结算流水、供应链金融平台的交易对手</td></tr><tr><td>前十大股东</td><td>工商登记股东、实际控制人、受益所有人</td></tr><tr><td>关联交易公告</td><td>工商任职与对外投资（同一法定代表人、董监高交叉任职）</td></tr><tr><td>诉讼公告与执行情况</td><td>裁判文书、执行信息公开网（失信、限高、被执行）、票交所承兑人逾期信息（机构接口）</td></tr><tr><td>违约标签：首次被提起金融债务诉讼</td><td>行内 90 天以上逾期</td></tr></tbody></table></div>
 <h2 id="s6"><span class="n">6</span>总结结论</h2>

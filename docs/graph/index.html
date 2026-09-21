@@ -163,7 +163,7 @@ aside h3:first-child{margin-top:0}
 <script src="lib/graphology.umd.min.js"></script>
 <script src="lib/sigma.min.js"></script>
 <script>
-const META = __META__, YEARS = __YEARS__, BUILD = '__BUILD__', HINT = __HINT__;
+const META = {"2016": {"nodes": 40484, "pairs": 42586, "firms": 2844, "defaults": 60, "risky": 1251, "events": 4319}, "2017": {"nodes": 45790, "pairs": 48079, "firms": 3233, "defaults": 100, "risky": 1709, "events": 5900}, "2018": {"nodes": 48636, "pairs": 51143, "firms": 3230, "defaults": 88, "risky": 2961, "events": 8170}, "2019": {"nodes": 53254, "pairs": 55978, "firms": 3371, "defaults": 86, "risky": 3846, "events": 10638}, "2020": {"nodes": 58926, "pairs": 61781, "firms": 3704, "defaults": 58, "risky": 4707, "events": 12015}, "2021": {"nodes": 63551, "pairs": 67100, "firms": 4175, "defaults": 39, "risky": 4820, "events": 12507}, "2022": {"nodes": 65955, "pairs": 69924, "firms": 4539, "defaults": 29, "risky": 4748, "events": 12461}, "2023": {"nodes": 67585, "pairs": 71845, "firms": 4796, "defaults": 57, "risky": 4063, "events": 11964}}, YEARS = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023], BUILD = '20260922003738', HINT = ["东易日盛", "三峡新材", "创新医疗"];
 const VQ = location.protocol === 'file:' ? '' : `?v=${BUILD}`;
 const $ = s => document.querySelector(s);
 const REL = ['sup', 'cus', 'holder', 'invest', 'ctrl', 'person', 'affil', 'rp_other', 'codef', 'debtor', 'creditor'];

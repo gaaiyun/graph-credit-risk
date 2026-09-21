@@ -2,14 +2,15 @@
 
 布局：在全部年份关系的并集图上跑一次 ForceAtlas2（tools/layout/layout.mjs），各年份共用坐标，切换年份时节点不跳动。
 数据：节点全称、主体类型、行业；逐年的关系（按关系类型位掩码）、节点风险（36 个月衰减）、样本企业的违约结局与样本外违约概率。
-输出含实名，受 CNRDS / CSMAR 许可限制只留在本地：report/graph_explorer/（report/ 不入库）。
-用法：python 24_graph_explorer.py [--relayout] [--iter 700] [--zip]
+输出含实名：本地 report/graph_explorer/（report/ 不入库）；--publish 同步到 docs/graph/ 公开（用户已确认不脱敏）。
+用法：python 24_graph_explorer.py [--relayout] [--iter 700] [--zip] [--publish]
 """
 import argparse
 import json
 import shutil
 import subprocess
 import unicodedata
+import zipfile
 
 import numpy as np
 import pandas as pd
@@ -21,6 +22,7 @@ ap.add_argument("--iter", type=int, default=700)
 ap.add_argument("--out", default=str(ROOT / "report" / "graph_explorer"))
 ap.add_argument("--pos", default=str(WORK / "gx_pos.json"), help="布局坐标文件（node layout.mjs 的输出）")
 ap.add_argument("--zip", action="store_true", help="另存一份 zip 供提交")
+ap.add_argument("--publish", action="store_true", help="同步到 docs/graph/（GitHub Pages，实名公开）")
 ap.add_argument("--fa2", default="{}", help="覆盖 ForceAtlas2 参数的 JSON（默认值写在 layout.mjs）")
 args = ap.parse_args()
 
@@ -136,6 +138,13 @@ html = (html.replace("__META__", json.dumps(meta, ensure_ascii=False)).replace("
         .replace("__BUILD__", build).replace("__HINT__", json.dumps(hint, ensure_ascii=False)))
 (GX / "index.html").write_text(html, encoding="utf-8")
 print("[done]", GX / "index.html")
-if args.zip:                                           # 提交用：整个文件夹打包，解压后双击 index.html 即可
-    z = shutil.make_archive(str(GX.parent / "关联图谱全景_graph_explorer"), "zip", GX.parent, GX.name)
-    print("[zip]", z, f"{Path(z).stat().st_size / 1e6:.1f} MB")
+if args.zip:                                           # 提交用离线包：解压后双击 graph_explorer/index.html
+    z = ROOT / "report" / "关联图谱全景_graph_explorer.zip"
+    with zipfile.ZipFile(z, "w", zipfile.ZIP_DEFLATED) as zf:
+        for f in sorted(GX.rglob("*")):
+            if f.is_file():
+                zf.write(f, Path("graph_explorer") / f.relative_to(GX))
+    print("[zip]", z, f"{z.stat().st_size / 1e6:.1f} MB")
+if args.publish:                                       # 用户确认公开实名版（2026-09-22）：同步到 GitHub Pages 的 docs/graph/
+    shutil.copytree(GX, ROOT / "docs" / "graph", dirs_exist_ok=True)
+    print("[publish]", ROOT / "docs" / "graph")
