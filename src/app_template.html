@@ -113,6 +113,9 @@ th{position:sticky;top:0;background:var(--card);font-size:12px;color:var(--muted
 tbody tr:hover{background:var(--paper-2)}
 td .yes{color:var(--accent);font-weight:700}td .no{color:var(--muted)}
 td a{color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.lv{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;line-height:1.6}
+.lv1{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);font-weight:700}
+.lv2{border:1px solid var(--rule);color:var(--muted)}
 /* 情景推演 */
 .sim{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,.9fr);gap:16px}
 .sim .panel label{display:flex;gap:10px;align-items:flex-start;padding:9px 6px;border-bottom:1px dashed var(--rule);cursor:pointer}
@@ -130,7 +133,7 @@ td a{color:var(--accent);cursor:pointer;text-decoration:underline;text-underline
 .ev3 svg{width:100%;height:auto;display:block}
 .ev3 svg text{font-family:var(--sans);fill:var(--ink-2)}
 footer{max-width:1320px;margin:0 auto;padding:0 16px 40px;font-size:12px;color:var(--muted);line-height:1.8}
-@media (max-width:1100px){.head{grid-template-columns:repeat(2,minmax(0,1fr))}.head>div:first-child{grid-column:1/-1}.grid2{grid-template-columns:1fr}.sim{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1100px){.head{grid-template-columns:repeat(2,minmax(0,1fr))}.head>div:first-child{grid-column:1/-1}.grid2{grid-template-columns:1fr}.sim{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stats .stat:last-child:nth-child(odd){grid-column:1/-1}}
 @media (max-width:820px){#tlChart,#netChart{overflow-x:auto}#tlChart svg{min-width:680px}#netChart svg{min-width:500px}.pano{grid-template-columns:1fr}.side{position:static;max-height:none}.flist{max-height:260px}.ev3{grid-template-columns:1fr}.tabs button{padding:5px 10px}}
 @media (prefers-reduced-motion:reduce){.pulse{animation:none}.view.on{animation:none}}
 </style>
@@ -187,9 +190,10 @@ footer{max-width:1320px;margin:0 auto;padding:0 16px 40px;font-size:12px;color:v
 <!-- 预警工作台 -->
 <section class="view" id="v-alert">
   <h2 class="sec">预警工作台</h2>
-  <p class="lead">测试期内每月按动态模型评分取前 5% 列入预警名单；这里列出每家企业在一个观察年内首次进入名单的月份。“6 个月内违约”是事后结局，用于检验预警质量，业务使用时不可见。</p>
+  <p class="lead">测试期内每月按动态模型评分取前 5% 列入预警名单；这里列出每家企业在一个观察年内首次进入名单的月份。名单按触发渠道分两级：近 3 个月客户或担保连带方（共同被告）被起诉、或任一关联方被强制执行、列入失信的，列为<b>优先复核</b>，其余为常规复核。“6 个月内违约”是事后结局，用于检验预警质量，业务使用时不可见。</p>
   <div class="stats" id="aStats"></div>
   <div class="filters">
+    <span>复核等级</span><select id="aLvl"><option value="">全部</option><option value="1">优先复核</option><option value="2">常规复核</option></select>
     <span>触发来源</span><select id="aSrc"></select>
     <span>行业</span><select id="aInd"></select>
     <span>年份</span><select id="aYear"></select>
@@ -373,28 +377,30 @@ function drawAttr(){
 }
 
 /* ---------- 预警工作台 ---------- */
-const AH = [['ym', '月份'], ['firm', '企业'], ['industry', '行业'], ['p4', '风险分位'], ['p1', '仅自身分位'], ['driver', '主要驱动'], ['src', '近 3 月关联事件'], ['out', '6 个月内违约']];
-let aSort = ['ym', -1];
+const AH = [['lvl', '复核等级'], ['ym', '月份'], ['firm', '企业'], ['industry', '行业'], ['p4', '风险分位'], ['p1', '仅自身分位'], ['driver', '主要驱动'], ['src', '近 3 月关联事件'], ['out', '6 个月内违约']];
+let aSort = ['lvl', 1];
 function initAlerts(){
   const A = D.alerts;
   const opt = (sel, vals, all) => { sel.innerHTML = `<option value="">${all}</option>` + vals.map(v => `<option>${v}</option>`).join(''); sel.onchange = drawAlerts; };
   opt($('#aSrc'), [...new Set(A.flatMap(a => a.src_list))].sort(), '全部');
   opt($('#aInd'), [...new Set(A.map(a => a.industry))].sort(), '全部');
   opt($('#aYear'), [...new Set(A.map(a => a.ym.slice(0, 4)))].sort(), '全部');
-  $('#aOut').onchange = drawAlerts;
+  $('#aOut').onchange = drawAlerts; $('#aLvl').onchange = drawAlerts;
   $('#aHead').innerHTML = AH.map(([k, l]) => `<th data-k="${k}">${l}</th>`).join('') + '<th></th>';
   $$('#aHead th[data-k]').forEach(th => th.onclick = () => { aSort = [th.dataset.k, aSort[0] === th.dataset.k ? -aSort[1] : -1]; drawAlerts(); });
   const s = D.alert_stats;
-  $('#aStats').innerHTML = [[s.n.toLocaleString(), '首次预警（企业-观察年）'], [pp(s.hit), '6 个月内违约比例'], [pp(s.base), '同期全样本 6 个月违约率'],
-    [s.lift.toFixed(1) + '×', '命中率相对基准'], [pp(s.capture), '违约事件被提前预警的比例']].map(([v, l]) => `<div class="card stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  $('#aStats').innerHTML = [[s.n.toLocaleString(), '首次预警（企业-观察年）'], [pp(s.hit), `6 个月内违约比例（全样本 ${pp(s.base)}）`],
+    [s.lift.toFixed(1) + '×', '首次预警命中率 / 全样本基准'], [pp(s.capture), '违约事件被提前预警的比例'],
+    [`<span style="color:var(--accent)">${pp(s.hit1)}</span>`, `优先复核命中率（${s.n1} 条；常规复核 ${pp(s.hit2)}）`]].map(([v, l]) => `<div class="card stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
   drawAlerts();
 }
 function drawAlerts(){
-  const src = $('#aSrc').value, ind = $('#aInd').value, yr = $('#aYear').value, out = $('#aOut').value;
-  let A = D.alerts.filter(a => (!src || a.src_list.includes(src)) && (!ind || a.industry === ind) && (!yr || a.ym.startsWith(yr)) && (out === '' || String(a.out) === out));
-  const [k, dir] = aSort; A = A.slice().sort((a, b) => (a[k] > b[k] ? 1 : a[k] < b[k] ? -1 : 0) * dir);
+  const src = $('#aSrc').value, ind = $('#aInd').value, yr = $('#aYear').value, out = $('#aOut').value, lv = $('#aLvl').value;
+  let A = D.alerts.filter(a => (!src || a.src_list.includes(src)) && (!ind || a.industry === ind) && (!yr || a.ym.startsWith(yr)) && (out === '' || String(a.out) === out) && (!lv || String(a.lvl) === lv));
+  const cmp = (x, y) => (x > y ? 1 : x < y ? -1 : 0);
+  const [k, dir] = aSort; A = A.slice().sort((a, b) => cmp(a[k], b[k]) * dir || cmp(b.ym, a.ym) || cmp(b.p4, a.p4));
   $('#aCount').textContent = `${A.length.toLocaleString()} 条，命中 ${A.filter(a => a.out).length}`;
-  $('#aBody').innerHTML = A.slice(0, 400).map(a => `<tr><td class="mono">${a.ym}</td><td>${a.firm}</td><td>${a.industry}</td><td class="mono">${pct(a.p4)}</td><td class="mono muted">${pct(a.p1)}</td>
+  $('#aBody').innerHTML = A.slice(0, 400).map(a => `<tr><td>${a.lvl === 1 ? '<span class="lv lv1">优先复核</span>' : '<span class="lv lv2">常规复核</span>'}</td><td class="mono">${a.ym}</td><td>${a.firm}</td><td>${a.industry}</td><td class="mono">${pct(a.p4)}</td><td class="mono muted">${pct(a.p1)}</td>
     <td>${a.driver}</td><td>${a.src || '<span class="muted">—</span>'}</td><td>${a.out ? '<span class="yes">是</span>' : '<span class="no">否</span>'}</td>
     <td>${a.detail ? `<a data-f="${a.firm}" data-m="${a.m}">查看全景</a>` : ''}</td></tr>`).join('');
   $$('#aBody a[data-f]').forEach(x => x.onclick = () => openFirm(x.dataset.f, +x.dataset.m));

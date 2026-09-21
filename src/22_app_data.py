@@ -121,7 +121,7 @@ pre = R[R.def_after_S & (R.def_date <= R.S + pd.DateOffset(months=6))].groupby([
 coh = coh.join(pre)
 dyc = DY.set_index(["code", "t", "k"])
 evsum_cols = [c for c in DY.columns if c.startswith("dy_") and c.endswith("_3m") and not c.startswith(("dy_all_", "dy_peer_"))]
-R = R.merge(DY[["code", "t", "k"] + evsum_cols], on=["code", "t", "k"], how="left")
+R = R.merge(DY[["code", "t", "k", "dy_all_enf_3m"] + evsum_cols], on=["code", "t", "k"], how="left")
 R["ev3"] = R[evsum_cols].fillna(0).sum(1)
 coh = coh.join(R.groupby(["code", "t"]).ev3.max().rename("maxev3"))
 coh["gain"] = coh.pre_p4 - coh.pre_p1
@@ -314,10 +314,18 @@ for r_, ix in zip(first.itertuples(), fidx):
     c = shp_all.get(ix)
     drv = max(GROUPS, key=lambda g: sum(c[i] for i, f in enumerate(F4) if f in g[1]))[0] if c is not None else ""
     src = [v for k, v in REL_SRC.items() if k in first.columns and getattr(r_, k, 0) and getattr(r_, k) > 0]
+    if getattr(r_, "dy_all_enf_3m", 0) and r_.dy_all_enf_3m > 0:
+        src.append("关联方被执行/失信")
+    lvl = 1 if any(x in src for x in ("客户", "共同被告", "关联方被执行/失信")) else 2      # 分级规则见 23_attribution.py
     key = (r_.code, r_.t)
     alerts.append({"ym": r_.ym, "m": int(r_.k), "firm": firm_id.get(key, anon(r_.code)), "industry": ind_of.get(key, ""), "p4": float(r_.p4),
-                   "p1": float(r_.p1), "driver": drv, "src": "、".join(src), "src_list": src, "out": int(r_.out), "detail": key in firm_id})
+                   "p1": float(r_.p1), "driver": drv, "src": "、".join(src), "src_list": src, "out": int(r_.out), "detail": key in firm_id,
+                   "lvl": lvl})
 alert_stats = {"n": len(alerts), "hit": float(first.out.mean()), "base": float(R.y6.mean()), "lift": float(first.out.mean() / R.y6.mean())}
+_l1 = [a for a in alerts if a["lvl"] == 1]
+_l2 = [a for a in alerts if a["lvl"] == 2]
+alert_stats.update({"n1": len(_l1), "hit1": float(np.mean([a["out"] for a in _l1])) if _l1 else 0.0,
+                    "hit2": float(np.mean([a["out"] for a in _l2])) if _l2 else 0.0})
 al = pd.read_csv(OUT / "dyn_alert.csv")
 alert_stats["capture"] = float(al[al.模型 == N_D4].iloc[0]["违约前6个月内被预警比例"])
 
