@@ -35,6 +35,8 @@ h1.title{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5.2vw,58p
 h1.title em{font-style:normal;color:var(--accent)}
 .sub{font-family:var(--serif);font-size:clamp(16px,2vw,20px);color:var(--ink-2);margin:0 0 26px;max-width:40em}
 .lede{font-size:17px;max-width:46em;border-left:3px solid var(--accent);padding:4px 0 4px 16px;color:var(--ink)}
+.cta{display:inline-flex;align-items:center;gap:10px;margin-top:18px;background:var(--ink);color:var(--paper);text-decoration:none;border-radius:999px;padding:10px 18px;font-weight:700;font-size:15px;box-shadow:var(--shadow);transition:transform .15s}
+.cta:hover{transform:translateY(-1px)}.cta span{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;opacity:.75}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:30px;border-top:2px solid var(--ink);border-bottom:1px solid var(--rule)}
 .kpi{padding:16px 14px 14px;border-right:1px solid var(--rule)}
 .kpi:last-child{border-right:0}
@@ -107,6 +109,7 @@ footer{border-top:1px solid var(--rule);padding:26px 0 40px;font-size:12.5px;col
   <h1 class="title reveal" style="animation-delay:.08s">风险沿着<em>股权与担保链</em>传导：一个关联图谱增强的企业信用风控模型</h1>
   <p class="sub reveal" style="animation-delay:.16s">以 A 股非金融上市公司 2016—2023 年的逐年异质关联网络为代理样本</p>
   <p class="lede reveal" style="animation-delay:.24s">{{LEDE}}</p>
+  <a class="cta reveal" style="animation-delay:.3s" href="app.html">打开产品原型：关联风险全景 →<span>全景视图 · 预警工作台 · 情景推演</span></a>
   <div class="kpis">{{KPIS}}</div>
 </header>
 <div class="layout">

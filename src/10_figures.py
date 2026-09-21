@@ -14,26 +14,7 @@ FIG = OUT / "fig"
 FIG.mkdir(exist_ok=True)
 INK, MUTED, ACC, ACC2, GRID, POS = "#1f2933", "#7b8794", "#c2410c", "#2563eb", "#e4e7eb", "#15803d"
 
-FEAT_CN = {
-    "impair_to_rev": "资产减值/营收", "sw_l1_c": "申万一级行业", "fund_n": "持股基金家数", "cfo_to_due": "现金流到期债务保障",
-    "firm_age": "上市年限", "cash_ratio": "现金比率", "tang_lev": "有形资产负债率", "top1_stake": "第一大股东持股",
-    "log_ta": "总资产(对数)", "fin_exp_ratio": "财务费用率", "wc_to_loan": "营运资金/借款", "d_roa": "ROA变动",
-    "lev": "资产负债率", "d_cfo_to_debt": "现金债务比变动", "inst_ratio": "机构持股比例", "cfo_to_debt": "现金债务总额比",
-    "int_debt_ratio": "带息负债比率", "quick_ratio": "速动比率", "cur_ratio": "流动比率", "rel_rev_growth": "相对同业营收增速",
-    "pagerank": "PageRank中心度", "period_exp_ratio": "期间费用率", "nb_codef_n": "共同被告数", "own_viol": "违规处罚(衰减)",
-    "ltloan_to_ta": "长期借款/总资产", "roa": "ROA", "roe": "ROE", "gross_margin": "毛利率", "net_margin": "净利率",
-    "own_trade": "经营性欠款被诉", "own_other_def": "其他案件被诉", "own_def_n12": "近12月被诉次数", "own_def_amt12": "近12月被诉金额",
-    "hop1_all": "一跳关联风险", "hop2_all": "二跳关联风险", "ppr3": "三跳扩散风险", "deg": "关联度数", "deg_listed": "上市关联方数",
-    "kcore": "k-core", "group_size": "控制圈规模", "group_fin": "控制圈违约暴露", "group_risk": "控制圈风险", "peer_fin_rate": "同业违约率",
-    "peer_roa": "同业ROA", "rel_roa": "相对同业ROA", "peer_rev_growth": "同业营收增速", "rel_d_roa": "相对同业ROA变动",
-    "log_rev": "营业收入(对数)", "rev_growth": "营收增速", "eq_mult": "权益乘数", "int_cover": "利息保障倍数", "cfo_to_cl": "现金流动负债比",
-    "cfo_to_intdebt": "现金带息债务比", "ebit_margin": "息税前利润率", "cfo_to_profit": "现金/利润总额", "d_lev": "负债率变动",
-    "d_gross_margin": "毛利率变动", "d_cur_ratio": "流动比率变动", "loss": "当年亏损", "loss_2y": "连续两年亏损", "own_probe12": "近12月立案调查",
-    "sell_major": "大股东净减持", "sell_exec": "高管净减持", "sell_person": "个人股东净减持", "top1_person": "第一大股东为自然人",
-    "soe": "国有控股", "top10_nonfin": "前十大非金融股东持股", "board_c": "上市板块", "own_fin_old": "24-36月前违约",
-    "own_sec_fraud": "虚假陈述被诉", "own_viol_severe": "严重违规处罚", "peer_n": "同业家数", "peer_loss_rate": "同业亏损率",
-    "peer_d_roa": "同业ROA变动", "group_listed": "控制圈上市公司数", "grs": "图谱风险分GRS",
-}
+FEAT_CN = dict(FEAT_CN)
 REL_CN = {"sup": "供应商", "cus": "客户", "holder": "股东", "invest": "对外投资", "ctrl": "同一控制", "person": "同一关键人员",
           "affil": "联营/合营/子公司", "rp_other": "其他关联方", "codef": "共同被告", "debtor": "债务人", "creditor": "债权人"}
 
@@ -58,61 +39,72 @@ def clean(ax):
     ax.tick_params(labelsize=7.5, colors=MUTED)
 
 
-# ---------------------------------------------------------------- 图3 消融增量
-ab = pd.read_csv(OUT / "ablation.csv")
-ro = pd.read_csv(OUT / "rolling_oot.csv")
-fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.9), dpi=200, gridspec_kw={"width_ratios": [1.05, 1]})
-ax = axes[0]
-names = ab.模型.tolist()
-x = np.arange(len(names))
-ax.errorbar(x, ab.AUC, yerr=[ab.AUC - ab.AUC_lo, ab.AUC_hi - ab.AUC], fmt="o", color=INK, ms=4, capsize=2.5, lw=1)
-for i, r in ab.iterrows():
-    ax.text(i, r.AUC_hi + 0.002, f"{r.AUC:.3f}", ha="center", fontsize=7, color=INK)
-ax.set_xticks(x)
-ax.set_xticklabels([n.replace(" ", "\n", 1) for n in names], fontsize=7)
-ax.set_ylabel("测试集 AUC（2022-2023）", fontsize=8, color=MUTED)
-ax.set_title("固定切分：各模型 AUC 与 95% CI", fontsize=8.5, color=INK, loc="left")
-clean(ax)
-ax = axes[1]
-rr = ro[ro.对照.notna()].copy()
-rr = rr[rr.模型.str.startswith(("M", "S1", "R1"))]
-y = np.arange(len(rr))[::-1]
-col = [POS if lo > 0 else (ACC if hi < 0 else MUTED) for lo, hi in zip(rr.ΔAUC_lo, rr.ΔAUC_hi)]
-ax.hlines(y, rr.ΔAUC_lo, rr.ΔAUC_hi, color=col, lw=1.6)
-ax.scatter(rr.ΔAUC, y, color=col, s=16, zorder=3)
+# ---------------------------------------------------------------- 图3 两种评分口径的增量（滚动外推 2019-2023）
+ro = pd.read_csv(OUT / "rolling_oot.csv").set_index("模型")
+gr = pd.read_csv(OUT / "gnn_rolling.csv")
+rows = []
+for n, lab in [("M2 +一跳关联", "+一跳关联"), ("M3 +多跳传导", "+多跳传导"), ("M4 +结构位置", "+结构位置"), ("M5 +同业竞争", "+同业竞争"),
+               ("S1 无报表+图谱", "无报表 → 无报表+图谱")]:
+    r = ro.loc[n]
+    rows.append(("年度评分", lab, r.ΔAUC, r.ΔAUC_lo, r.ΔAUC_hi))
+g = gr[(gr.模型 == "R-GCN") & (gr.对照 == "MLP(同架构去边)")].iloc[0]
+rows.append(("年度评分", "R-GCN vs 同架构去边网络", g.ΔAUC, g.CI_lo, g.CI_hi))
+for (i, j), lab in [((1, 0), "+静态图谱"), ((3, 1), "+一跳与多层级关联时序"), ((3, 0), "自身 → 全部图谱信息"), ((4, 0), "+关联时序(不含静态图谱)")]:
+    d = json.load(open(OUT / f"dyn_delta_{i}_{j}.json", encoding="utf-8"))
+    rows.append(("月度动态评分", lab, d["d"], d["lo"], d["hi"]))
+fig, ax = plt.subplots(figsize=(6.6, 3.4), dpi=200)
+yy, ylabels, yv = [], [], 0
+for grp in ["年度评分", "月度动态评分"]:
+    sub = [r for r in rows if r[0] == grp]
+    ax.text(-0.034, yv + 0.1, grp, fontsize=8, color=INK, fontweight="bold", va="bottom")
+    yv -= 0.45
+    for _, lab, d, lo, hi in sub:
+        c = ACC if lo > 0 else (ACC2 if hi < 0 else MUTED)
+        ax.hlines(yv, lo, hi, color=c, lw=1.8)
+        ax.scatter([d], [yv], color=c, s=16, zorder=3)
+        ax.text(hi + 0.0012, yv, f"{d:+.4f}", va="center", fontsize=6.8, color=INK)
+        yy.append(yv); ylabels.append(lab)
+        yv -= 1
+    yv -= 0.3
 ax.axvline(0, color=MUTED, lw=0.8, ls="--")
-ax.set_yticks(y)
-ax.set_yticklabels([f"{m}  vs {c.split(' ')[0]}" for m, c in zip(rr.模型, rr.对照)], fontsize=7)
-for yy, r in zip(y, rr.itertuples()):
-    ax.text(r.ΔAUC_hi + 0.001, yy, f"{r.ΔAUC:+.4f}", va="center", fontsize=6.8, color=INK)
-ax.set_xlabel("ΔAUC（滚动外推 2019-2023 合并，配对bootstrap 95% CI）", fontsize=7.5, color=MUTED)
-ax.set_title("滚动外推：相对基线的增量", fontsize=8.5, color=INK, loc="left")
+ax.set_yticks(yy)
+ax.set_yticklabels(ylabels, fontsize=7.2)
+ax.set_xlim(-0.035, 0.03)
+ax.set_xlabel("ΔAUC 与 95% 置信区间（年度：配对分层 bootstrap；月度：按企业整簇 bootstrap）", fontsize=7.2, color=MUTED)
 clean(ax)
 fig.tight_layout()
 fig.savefig(FIG / "fig3_ablation.png")
 
-# ---------------------------------------------------------------- 图4 传导强度森林图
-co = pd.read_csv(OUT / "contagion_or.csv")
-co = co.iloc[::-1].reset_index(drop=True)
-fig, ax = plt.subplots(figsize=(6.4, 3.2), dpi=200)
-y = np.arange(len(co))
-col = [POS if r.OR_lo > 1 else (ACC2 if r.OR_hi < 1 else MUTED) for r in co.itertuples()]
-col = [ACC if c == POS else c for c in col]
-ax.hlines(y, co.OR_lo, co.OR_hi, color=col, lw=1.8)
-ax.scatter(co.OR, y, color=col, s=18, zorder=3)
-ax.axvline(1, color=MUTED, lw=0.8, ls="--")
-ax.set_xscale("log")
-ax.set_xticks([0.5, 1, 2, 3])
-ax.set_xticklabels(["0.5", "1", "2", "3"])
-ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-ax.set_yticks(y)
-lab = [f"{r.关系}" + (f"（覆盖{r.覆盖率:.1%}）" if pd.notna(r.覆盖率) else "") for r in co.itertuples()]
-ax.set_yticklabels(lab, fontsize=7.5)
-for yy, r in zip(y, co.itertuples()):
-    star = "***" if r.p < 0.01 else ("**" if r.p < 0.05 else ("*" if r.p < 0.1 else ""))
-    ax.text(max(r.OR_hi, 1) * 1.05, yy, f"{r.OR:.2f}{star}", va="center", fontsize=7, color=INK)
-ax.set_xlabel("优势比 OR（控制自身财务、年份与行业固定效应；公司聚类稳健标准误）", fontsize=7.5, color=MUTED)
-clean(ax)
+# ---------------------------------------------------------------- 图4 左：年度传导渠道 OR；右：月度动态事件乘数
+co = pd.read_csv(OUT / "contagion_or.csv").iloc[::-1].reset_index(drop=True)
+mu = pd.read_csv(OUT / "dyn_multipliers.csv").iloc[::-1].reset_index(drop=True)
+fig, axes = plt.subplots(1, 2, figsize=(7.4, 3.5), dpi=200)
+
+
+def forest_ax(ax, labels, v, lo, hi, p=None, xt=(0.5, 1, 2, 3), xl=(0.3, 4.5)):
+    y = np.arange(len(v))
+    col = [ACC if l_ > 1 else (ACC2 if h_ < 1 else MUTED) for l_, h_ in zip(lo, hi)]
+    ax.hlines(y, np.clip(lo, xl[0], xl[1]), np.clip(hi, xl[0], xl[1]), color=col, lw=1.7)
+    ax.scatter(v, y, color=col, s=15, zorder=3)
+    ax.axvline(1, color=MUTED, lw=0.8, ls="--")
+    ax.set_xscale("log")
+    ax.set_xlim(*xl)
+    ax.set_xticks(xt)
+    ax.set_xticklabels([str(t) for t in xt])
+    ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax.set_yticks(y)
+    ax.set_yticklabels(labels, fontsize=6.9)
+    for yy_, vv, hh in zip(y, v, hi):
+        ax.text(min(hh, xl[1]) * 1.06, yy_, f"{vv:.2f}", va="center", fontsize=6.5, color=INK)
+    clean(ax)
+
+
+forest_ax(axes[0], [r.replace("(连带)", "(担保连带)") for r in co.关系], co.OR.values, co.OR_lo.values, co.OR_hi.values)
+axes[0].set_title("年度截面：存在出险关联方的优势比", fontsize=8, color=INK, loc="left")
+axes[0].set_xlabel("控制自身财务、年份与行业；公司聚类", fontsize=6.8, color=MUTED)
+forest_ax(axes[1], mu["关联事件(近3个月)"].values, mu.事件乘数.values, mu.CI_lo.values, mu.CI_hi.values, xt=(0.5, 1, 2, 4, 8), xl=(0.3, 9))
+axes[1].set_title("月度动态：近 3 个月关联事件的乘数", fontsize=8, color=INK, loc="left")
+axes[1].set_xlabel("未来 6 个月违约几率的倍数，以样本外自身模型评分为基准", fontsize=6.8, color=MUTED)
 fig.tight_layout()
 fig.savefig(FIG / "fig4_contagion.png")
 

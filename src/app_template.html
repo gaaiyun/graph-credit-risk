@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>关联风险全景</title>
+<meta name="description" content="经营类客户关联图谱风控产品原型：关联风险全景视图、预警工作台与情景推演">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%231c1f23%22/%3E%3Cpath d=%22M9 22L16 10L23 22%22 stroke=%22%23f0773a%22 stroke-width=%222.4%22 fill=%22none%22/%3E%3Ccircle cx=%2216%22 cy=%2210%22 r=%223%22 fill=%22%23f0773a%22/%3E%3Ccircle cx=%229%22 cy=%2222%22 r=%222.6%22 fill=%22%23ebe6dc%22/%3E%3Ccircle cx=%2223%22 cy=%2222%22 r=%222.6%22 fill=%22%23ebe6dc%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f6f3ec;--paper-2:#eee8dc;--card:#fbf9f4;--ink:#1c1f23;--ink-2:#454b54;--muted:#7b8794;--rule:#d8d1c3;--rule-2:#e7e1d5;
+  --accent:#c2410c;--accent-2:#ea8a55;--accent-soft:#f3dccd;--blue:#2563eb;--blue-soft:#dbe6fb;--green:#15803d;--amber:#b45309;
+  --r1:#c2410c;--r2:#7c3aed;--r3:#0f766e;--r4:#b45309;--r5:#2563eb;
+  --shadow:0 1px 0 rgba(28,31,35,.04),0 10px 30px -18px rgba(28,31,35,.3);
+  --serif:"Noto Serif SC","Songti SC","SimSun",serif;--sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#131518;--paper-2:#1a1d21;--card:#181b1f;--ink:#ebe6dc;--ink-2:#bdb7ab;--muted:#8b919a;--rule:#2c3036;--rule-2:#23272c;
+  --accent:#f0773a;--accent-2:#f5a877;--accent-soft:#3a2418;--blue:#6ea0ff;--blue-soft:#1b2a45;--green:#4ade80;--amber:#f5b041;
+  --r1:#f0773a;--r2:#b794f6;--r3:#2dd4bf;--r4:#f5b041;--r5:#6ea0ff;--shadow:0 10px 30px -18px rgba(0,0,0,.7);}}
+:root[data-theme="dark"]{
+  --paper:#131518;--paper-2:#1a1d21;--card:#181b1f;--ink:#ebe6dc;--ink-2:#bdb7ab;--muted:#8b919a;--rule:#2c3036;--rule-2:#23272c;
+  --accent:#f0773a;--accent-2:#f5a877;--accent-soft:#3a2418;--blue:#6ea0ff;--blue-soft:#1b2a45;--green:#4ade80;--amber:#f5b041;
+  --r1:#f0773a;--r2:#b794f6;--r3:#2dd4bf;--r4:#f5b041;--r5:#6ea0ff;--shadow:0 10px 30px -18px rgba(0,0,0,.7);}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:14.5px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--ink) 5%,transparent) 1px,transparent 0);background-size:22px 22px}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--accent);text-underline-offset:3px}
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+.top .in{max-width:1320px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.brand b{font-family:var(--serif);font-weight:900;font-size:19px;letter-spacing:.01em}
+.brand span{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted)}
+.tabs{display:flex;gap:2px;background:var(--paper-2);border:1px solid var(--rule);border-radius:999px;padding:3px}
+.tabs button{border:0;background:none;padding:5px 14px;border-radius:999px;cursor:pointer;color:var(--ink-2);font-size:13.5px}
+.tabs button.on{background:var(--ink);color:var(--paper)}
+.tools{display:flex;gap:8px;align-items:center}
+.pill{border:1px solid var(--rule);background:none;border-radius:999px;padding:4px 11px;font-family:var(--mono);font-size:11px;color:var(--ink-2);cursor:pointer;text-decoration:none}
+.wrap{max-width:1320px;margin:0 auto;padding:18px 16px 60px}
+.view{display:none}.view.on{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:10px;box-shadow:var(--shadow)}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono)}
+h2.sec{font-family:var(--serif);font-weight:900;font-size:22px;margin:0 0 4px}
+p.lead{color:var(--ink-2);margin:0 0 14px;max-width:62em}
+/* 全景视图 */
+.pano{display:grid;grid-template-columns:290px minmax(0,1fr);gap:16px;align-items:start}
+.side{position:sticky;top:70px;padding:12px;max-height:calc(100vh - 90px);display:flex;flex-direction:column}
+.side .flt{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chip{border:1px solid var(--rule);background:var(--paper);border-radius:999px;padding:2px 10px;font-size:12.5px;cursor:pointer;color:var(--ink-2)}
+.chip.on{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.side input[type=search]{width:100%;border:1px solid var(--rule);background:var(--paper);border-radius:8px;padding:6px 10px;margin-bottom:10px}
+.flist{overflow:auto;margin:0 -6px;padding:0 6px}
+.fi{display:grid;grid-template-columns:1fr 64px;gap:4px 8px;padding:8px 8px;border-radius:8px;cursor:pointer;border:1px solid transparent}
+.fi:hover{background:var(--paper-2)}
+.fi.on{background:var(--paper-2);border-color:var(--rule)}
+.fi .nm{font-weight:700;font-size:13.5px}
+.fi .sub{grid-column:1/2;font-size:12px;color:var(--muted)}
+.fi svg{grid-row:1/3;grid-column:2}
+.tag{display:inline-block;font-size:11px;border-radius:4px;padding:0 6px;margin-left:6px;font-weight:500;vertical-align:1px}
+.tag.def{background:var(--accent-soft);color:var(--accent)}
+.tag.fp{background:var(--blue-soft);color:var(--blue)}
+.tag.ok{background:var(--paper-2);color:var(--muted)}
+.tag.miss{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber)}
+.head{padding:14px 16px;display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;align-items:center}
+.head .t1{font-family:var(--serif);font-weight:900;font-size:21px;line-height:1.2}
+.head .t2{font-size:12.5px;color:var(--muted);margin-top:4px}
+.kv{border-left:1px solid var(--rule);padding-left:12px}
+.kv .v{font-family:var(--serif);font-weight:900;font-size:26px;line-height:1.1}
+.kv .l{font-size:11.5px;color:var(--muted);margin-top:2px}
+.band{display:inline-block;font-size:12px;font-weight:700;border-radius:6px;padding:2px 8px}
+.b0{background:var(--paper-2);color:var(--muted)}.b1{background:color-mix(in srgb,var(--amber) 16%,transparent);color:var(--amber)}
+.b2{background:var(--accent-soft);color:var(--accent)}.b3{background:var(--accent);color:#fff}
+.grid2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;margin-top:16px}
+.panel{padding:12px 14px}
+.panel h3{font-family:var(--serif);font-size:15.5px;margin:0 0 2px}
+.panel .hint{font-size:12px;color:var(--muted);margin-bottom:6px}
+.tl svg{width:100%;height:auto;display:block}
+.slider{display:flex;align-items:center;gap:10px;margin-top:4px}
+.slider input{flex:1;accent-color:var(--accent)}
+.slider .mono{font-size:12.5px;min-width:74px;text-align:right}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--ink-2);margin-top:4px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:0}
+.net svg{width:100%;height:auto;display:block}
+.net .node{cursor:pointer}
+.net text{font-family:var(--sans)}
+@keyframes pulse{0%{r:7;opacity:.9}100%{r:17;opacity:0}}
+.pulse{animation:pulse 1.6s ease-out infinite}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--paper);font-size:12px;line-height:1.5;padding:7px 9px;border-radius:6px;max-width:280px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;transition:opacity .12s}
+.attr .row{display:grid;grid-template-columns:110px 1fr 56px;gap:8px;align-items:center;font-size:12.5px;margin:5px 0}
+.attr .bar{height:10px;background:var(--paper-2);border-radius:5px;position:relative;overflow:hidden}
+.attr .bar span{position:absolute;top:0;bottom:0;border-radius:5px}
+.drivers{margin:10px 0 0;padding:0;list-style:none;font-size:12.5px}
+.drivers li{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px dashed var(--rule)}
+.drivers li b{font-family:var(--mono);font-weight:600}
+.story{margin-top:16px;padding:12px 16px;font-size:13.5px;color:var(--ink-2)}
+.story b{color:var(--ink)}
+/* 预警工作台 */
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.stat{padding:12px 14px}.stat .v{font-family:var(--serif);font-weight:900;font-size:26px}.stat .l{font-size:12px;color:var(--muted)}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px;font-size:13px}
+.filters select{border:1px solid var(--rule);background:var(--card);border-radius:8px;padding:4px 8px}
+.tbl{overflow:auto;max-height:620px}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--rule-2);text-align:left;white-space:nowrap}
+th{position:sticky;top:0;background:var(--card);font-size:12px;color:var(--muted);font-weight:500;cursor:pointer;border-bottom:1px solid var(--rule)}
+tbody tr:hover{background:var(--paper-2)}
+td .yes{color:var(--accent);font-weight:700}td .no{color:var(--muted)}
+td a{color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+/* 情景推演 */
+.sim{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,.9fr);gap:16px}
+.sim .panel label{display:flex;gap:10px;align-items:flex-start;padding:9px 6px;border-bottom:1px dashed var(--rule);cursor:pointer}
+.sim .panel label:last-child{border-bottom:0}
+.sim input[type=checkbox]{accent-color:var(--accent);margin-top:4px}
+.sim .ev b{display:block;font-size:13.5px}.sim .ev span{font-size:12px;color:var(--muted)}
+.sim .ev .m{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.big{font-family:var(--serif);font-weight:900;font-size:54px;line-height:1}
+.gauge{height:12px;border-radius:6px;background:linear-gradient(90deg,var(--paper-2),color-mix(in srgb,var(--amber) 40%,transparent),var(--accent));position:relative;margin:14px 0 6px}
+.gauge i{position:absolute;top:-5px;width:3px;height:22px;background:var(--ink);border-radius:2px;transition:left .35s}
+.action{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:13px}
+.range{display:flex;gap:10px;align-items:center}.range input{flex:1;accent-color:var(--accent)}
+/* 证据 */
+.ev3{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.ev3 svg{width:100%;height:auto;display:block}
+.ev3 svg text{font-family:var(--sans);fill:var(--ink-2)}
+footer{max-width:1320px;margin:0 auto;padding:0 16px 40px;font-size:12px;color:var(--muted);line-height:1.8}
+@media (max-width:1100px){.head{grid-template-columns:repeat(2,minmax(0,1fr))}.head>div:first-child{grid-column:1/-1}.grid2{grid-template-columns:1fr}.sim{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:820px){#tlChart,#netChart{overflow-x:auto}#tlChart svg{min-width:680px}#netChart svg{min-width:500px}.pano{grid-template-columns:1fr}.side{position:static;max-height:none}.flist{max-height:260px}.ev3{grid-template-columns:1fr}.tabs button{padding:5px 10px}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}.view.on{animation:none}}
+</style>
+</head>
+<body>
+<div class="top"><div class="in">
+  <div class="brand"><b>关联风险全景</b><span>经营类客户图谱风控 · 产品原型</span></div>
+  <div class="tabs" role="tablist">
+    <button class="on" data-v="pano" type="button">全景视图</button>
+    <button data-v="alert" type="button">预警工作台</button>
+    <button data-v="sim" type="button">情景推演</button>
+    <button data-v="evid" type="button">方法与证据</button>
+  </div>
+  <div class="tools"><a class="pill" href="./">← 分析报告</a><button class="pill" id="themeBtn" type="button">深 / 浅</button></div>
+</div></div>
+
+<div class="wrap">
+<!-- 全景视图 -->
+<section class="view on" id="v-pano">
+  <div class="pano">
+    <aside class="card side">
+      <div class="flt" id="fFlt"></div>
+      <input type="search" id="fSearch" placeholder="搜索企业编号或行业">
+      <div class="flist" id="fList"></div>
+      <div class="muted" style="font-size:11.5px;margin-top:8px">样本来自 2019—2023 年滚动外推测试期；编号已脱敏。</div>
+    </aside>
+    <div>
+      <div class="card head" id="pHead"></div>
+      <div class="card panel tl" style="margin-top:16px">
+        <h3>月度风险分与关联事件时间轴</h3>
+        <div class="hint">实线：自身 + 关联图谱动态模型；虚线：仅自身特征。分位越高风险越高，95 分位以上进入预警名单。下方圆点为关联主体在当月新出现的风险事件。点击月份可回放。</div>
+        <div id="tlChart"></div>
+        <div class="slider"><input type="range" id="mSlider" min="0" max="11" value="11"><span class="mono" id="mLabel"></span></div>
+        <div class="legend" id="tlLegend"></div>
+      </div>
+      <div class="grid2">
+        <div class="card panel net">
+          <h3>多层级关联网络</h3>
+          <div class="hint" id="netHint">随月份回放：橙色为截至当月已出现风险事件的关联主体，外圈闪动表示近 3 个月新出现。</div>
+          <div id="netChart"></div>
+        </div>
+        <div class="card panel attr">
+          <h3>风险归因（当月）</h3>
+          <div class="hint">动态模型的 SHAP 分解：正值推高风险，负值降低风险。</div>
+          <div id="attrBars"></div>
+          <ul class="drivers" id="attrList"></ul>
+        </div>
+      </div>
+      <div class="card story" id="pStory"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 预警工作台 -->
+<section class="view" id="v-alert">
+  <h2 class="sec">预警工作台</h2>
+  <p class="lead">测试期内每月按动态模型评分取前 5% 列入预警名单；这里列出每家企业在一个观察年内首次进入名单的月份。“6 个月内违约”是事后结局，用于检验预警质量，业务使用时不可见。</p>
+  <div class="stats" id="aStats"></div>
+  <div class="filters">
+    <span>触发来源</span><select id="aSrc"></select>
+    <span>行业</span><select id="aInd"></select>
+    <span>年份</span><select id="aYear"></select>
+    <span>结局</span><select id="aOut"><option value="">全部</option><option value="1">6 个月内违约</option><option value="0">未违约</option></select>
+    <span class="muted" id="aCount"></span>
+  </div>
+  <div class="card tbl"><table><thead><tr id="aHead"></tr></thead><tbody id="aBody"></tbody></table></div>
+</section>
+
+<!-- 情景推演 -->
+<section class="view" id="v-sim">
+  <h2 class="sec">情景推演</h2>
+  <p class="lead">设定客户当前的 6 个月违约概率，勾选假设发生的关联事件，查看调整后的风险与建议动作。事件乘数来自样本外估计：在自身模型评分之上，近 3 个月出现该类关联事件使未来 6 个月违约几率变为原来的若干倍。多个事件按乘数相乘，只作方向性参考。</p>
+  <div class="sim">
+    <div class="card panel">
+      <h3>1 · 基准</h3>
+      <div class="hint">基准取“仅用自身特征”的模型概率，事件乘数就是在它之上估计的。可从样本企业带入，或直接设定。</div>
+      <select id="sFirm" style="width:100%;border:1px solid var(--rule);background:var(--paper);border-radius:8px;padding:6px 8px;margin:6px 0 12px"></select>
+      <div class="range"><input type="range" id="sBase" min="0" max="100" value="40"><span class="mono" id="sBaseV" style="min-width:64px;text-align:right"></span></div>
+      <div class="hint" style="margin-top:8px">违约概率刻度为对数；样本整体的 6 个月违约率约为 <span class="mono" id="sBaseRate"></span>。</div>
+    </div>
+    <div class="card panel">
+      <h3>2 · 假设发生的关联事件</h3>
+      <div id="sEvents"></div>
+    </div>
+    <div class="card panel">
+      <h3>3 · 结果</h3>
+      <div class="hint">调整后未来 6 个月违约概率</div>
+      <div class="big" id="sOut">—</div>
+      <div class="gauge"><i id="sNeedle"></i></div>
+      <div class="muted mono" style="font-size:11px;position:relative;height:14px"><span style="position:absolute;left:0">0.1%</span><span style="position:absolute;left:37%;transform:translateX(-50%)">1%</span><span style="position:absolute;left:74.1%;transform:translateX(-50%)">10%</span><span style="position:absolute;right:0">50%</span></div>
+      <div class="action" id="sAction"></div>
+      <div class="hint" id="sBreak" style="margin-top:10px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 方法与证据 -->
+<section class="view" id="v-evid">
+  <h2 class="sec">方法与证据</h2>
+  <p class="lead" id="eLead"></p>
+  <div class="ev3">
+    <div class="card panel"><h3>评分模型：静态年度 vs 月度动态</h3><div class="hint">滚动外推（2019—2023），相对各自基线的 AUC 增量与企业聚类 bootstrap 95% 置信区间。</div><div id="eDelta"></div></div>
+    <div class="card panel"><h3>关联事件乘数（在自身模型评分之上）</h3><div class="hint">近 3 个月出现该类事件时未来 6 个月违约几率的倍数，95% 置信区间。</div><div id="eMult"></div></div>
+    <div class="card panel"><h3>风险传导渠道（年度截面，控制自身财务）</h3><div class="hint">Logit 优势比；橙色为 95% 置信区间不含 1。</div><div id="eOR"></div></div>
+    <div class="card panel"><h3>赛题三条机制的检验</h3><div class="hint">①上游供应商提价 ②投资方其他被投项目出险 ③竞争对手突破。线性概率模型，行业×年份固定效应，单位：百分点。</div><div id="eMech"></div></div>
+  </div>
+</section>
+</div>
+<footer id="foot"></footer>
+<div class="tip" id="tip"></div>
+
+<script>
+const D = {{DATA_JSON}};
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, a, p){ const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; }
+function txt(p, x, y, s, a = {}){ const t = el('text', Object.assign({x, y}, a), p); t.textContent = s; return t; }
+const pct = v => v == null ? '—' : (v * 100).toFixed(1);
+const pp = v => (v * 100 < 1 ? (v * 100).toFixed(2) : (v * 100).toFixed(1)) + '%';
+const tip = $('#tip');
+function showTip(e, html){ tip.innerHTML = html; tip.style.opacity = 1; const x = Math.min(e.clientX + 14, innerWidth - 300); tip.style.left = x + 'px'; tip.style.top = (e.clientY + 14) + 'px'; }
+function hideTip(){ tip.style.opacity = 0; }
+const REL_COLOR = {'股权': '--r1', '担保连带': '--r2', '交易': '--r3', '兄弟企业': '--r4', '二跳': '--r5'};
+const band = p => p >= .95 ? ['b3', '预警'] : p >= .85 ? ['b2', '关注'] : p >= .6 ? ['b1', '观察'] : ['b0', '正常'];
+
+/* ---------- 主题与标签页 ---------- */
+(function(){
+  const root = document.documentElement; let s = null; try { s = localStorage.getItem('theme') } catch(e){}
+  if (s) root.setAttribute('data-theme', s);
+  $('#themeBtn').onclick = () => { const dark = root.getAttribute('data-theme') === 'dark' || (!root.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+    const n = dark ? 'light' : 'dark'; root.setAttribute('data-theme', n); try { localStorage.setItem('theme', n) } catch(e){} redraw(); };
+  $$('.tabs button').forEach(b => b.onclick = () => go(b.dataset.v));
+})();
+function go(v){ $$('.tabs button').forEach(x => x.classList.toggle('on', x.dataset.v === v)); $$('.view').forEach(x => x.classList.toggle('on', x.id === 'v-' + v)); if (v === 'evid') drawEvidence(); scrollTo({top: 0}); }
+
+/* ---------- 全景视图 ---------- */
+let cur = null, month = 11, flt = 'all';
+const FLT = [['all', '全部'], ['def', '已违约'], ['miss', '漏检'], ['fp', '预警未违约'], ['ok', '正常']];
+function buildList(){
+  $('#fFlt').innerHTML = '';
+  FLT.forEach(([k, l]) => { const b = document.createElement('button'); b.className = 'chip' + (flt === k ? ' on' : ''); b.type = 'button';
+    b.textContent = l + ' ' + D.firms.filter(f => k === 'all' || f.group === k).length; b.onclick = () => { flt = k; buildList(); }; $('#fFlt').appendChild(b); });
+  const q = $('#fSearch').value.trim();
+  const list = D.firms.filter(f => (flt === 'all' || f.group === flt) && (!q || (f.id + f.industry).includes(q)));
+  const box = $('#fList'); box.innerHTML = '';
+  list.forEach(f => {
+    const d = document.createElement('div'); d.className = 'fi' + (cur && cur.id === f.id ? ' on' : '');
+    const tag = {def: ['def', '违约'], fp: ['fp', '预警未违约'], ok: ['ok', '正常'], miss: ['miss', '漏检']}[f.group];
+    d.innerHTML = `<div class="nm">${f.id}<span class="tag ${tag[0]}">${tag[1]}</span></div><div class="sub">${f.industry} · ${f.period}</div>`;
+    const sv = el('svg', {viewBox: '0 0 64 30', width: 64, height: 30}); d.appendChild(sv);
+    const pts = f.months.map((m, i) => `${2 + i * 60 / 11},${28 - m.p4 * 26}`).join(' ') + (f.months.length === 1 ? ` 4,${28 - f.months[0].p4 * 26}` : '');
+    el('polyline', {points: pts, fill: 'none', stroke: css('--accent'), 'stroke-width': 1.6}, sv);
+    el('line', {x1: 2, x2: 62, y1: 28 - .95 * 26, y2: 28 - .95 * 26, stroke: css('--rule'), 'stroke-dasharray': '2 2'}, sv);
+    d.onclick = () => openFirm(f.id); box.appendChild(d);
+  });
+}
+$('#fSearch').oninput = buildList;
+function openFirm(id, m){
+  cur = D.firms.find(f => f.id === id); if (!cur) return;
+  month = Math.min(m != null ? m : (cur.focus_month != null ? cur.focus_month : 11), cur.months.length - 1);
+  $('#mSlider').max = cur.months.length - 1; $('#mSlider').value = month; go('pano'); buildList(); drawFirm();
+}
+$('#mSlider').oninput = e => { month = +e.target.value; drawFirm(); };
+function drawFirm(){
+  const f = cur, mm = f.months[month];
+  const [bc, bl] = band(mm.p4);
+  $('#pHead').innerHTML = `<div><div class="t1">${f.id} · ${f.industry}</div><div class="t2">观察期 ${f.period} ｜ ${f.outcome}</div></div>
+    <div class="kv"><div class="v">${pct(mm.p4)}</div><div class="l">动态模型风险分位（${mm.ym}）</div></div>
+    <div class="kv"><div class="v" style="color:var(--muted)">${pct(mm.p1)}</div><div class="l">仅自身特征的风险分位</div></div>
+    <div class="kv"><div class="v"><span class="band ${bc}">${bl}</span></div><div class="l">当月状态</div></div>
+    <div class="kv"><div class="v">${mm.ev3}</div><div class="l">近 3 个月关联风险事件</div></div>`;
+  $('#mLabel').textContent = mm.ym;
+  drawTimeline(); drawNet(); drawAttr();
+  $('#pStory').innerHTML = f.story;
+}
+function drawTimeline(){
+  const f = cur, box = $('#tlChart'); box.innerHTML = '';
+  const W = 900, H = 290, L = 70, R = 16, T = 14, B = 104, n = 12, nm = f.months.length;
+  const svg = el('svg', {viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '月度风险分与关联事件时间轴'}, box);
+  const x = i => L + 14 + i * (W - L - R - 14) / (n - 1), y = v => T + (1 - v) * (H - T - B);
+  el('rect', {x: L, y: y(1), width: W - L - R, height: y(.95) - y(1), fill: css('--accent-soft'), opacity: .7}, svg);
+  [0, .25, .5, .75, .95].forEach(v => { el('line', {x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: css('--rule-2')}, svg); txt(svg, L - 8, y(v) + 4, (v * 100).toFixed(0), {'text-anchor': 'end', 'font-size': 11, fill: css('--muted')}); });
+  const line = (k, color, dash) => el('polyline', {points: f.months.map((m, i) => `${x(i)},${y(m[k])}`).join(' ') + (nm === 1 ? ` ${x(0) + 1},${y(f.months[0][k])}` : ''), fill: 'none', stroke: color, 'stroke-width': 2.4, 'stroke-dasharray': dash || '', 'stroke-linejoin': 'round'}, svg);
+  line('p1', css('--muted'), '5 4'); line('p4', css('--accent'));
+  f.months.forEach((m, i) => { el('circle', {cx: x(i), cy: y(m.p4), r: i === month ? 5.5 : 3, fill: css('--accent')}, svg); });
+  el('line', {x1: x(month), x2: x(month), y1: T, y2: H - 18, stroke: css('--ink'), 'stroke-width': 1, 'stroke-dasharray': '3 3'}, svg);
+  // 事件泳道
+  const lanes = ['股权', '担保连带', '交易', '兄弟企业', '二跳'], ly0 = H - B + 26;
+  lanes.forEach((ln, j) => { const yy = ly0 + j * 13; txt(svg, L - 8, yy + 4, ln, {'text-anchor': 'end', 'font-size': 10.5, fill: css('--muted')}); el('line', {x1: L, x2: W - R, y1: yy, y2: yy, stroke: css('--rule-2')}, svg); });
+  f.events.forEach(e => { const j = lanes.indexOf(e.lane); if (j < 0) return; const i = e.m; if (i < 0 || i >= nm) return;
+    const c = el('circle', {cx: x(i) + (e.jit || 0), cy: ly0 + j * 13, r: 4.2, fill: css(REL_COLOR[e.lane]), stroke: css('--card'), 'stroke-width': 1}, svg);
+    c.style.cursor = 'pointer';
+    c.addEventListener('mousemove', ev => showTip(ev, `<b>${e.ym}</b> · ${e.rel}<br>${e.who}：${e.kind}`)); c.addEventListener('mouseleave', hideTip); });
+  f.axis.forEach((ym, i) => { txt(svg, x(i), H - 4, ym.slice(2), {'text-anchor': 'middle', 'font-size': 10.5, fill: i === month ? css('--ink') : (i < nm ? css('--muted') : css('--rule')), 'font-weight': i === month ? 700 : 400});
+    if (i >= nm) return;
+    const hit = el('rect', {x: x(i) - (W - L - R) / (n - 1) / 2, y: T, width: (W - L - R) / (n - 1), height: H - T, fill: 'transparent'}, svg);
+    hit.style.cursor = 'pointer'; hit.onclick = () => { month = i; $('#mSlider').value = i; drawFirm(); }; });
+  if (nm < n) { el('rect', {x: x(nm - 1) + 6, y: T, width: x(n - 1) - x(nm - 1) - 6, height: H - B - T + 4, fill: css('--paper-2'), opacity: .55}, svg);
+    txt(svg, (x(nm - 1) + x(n - 1)) / 2, T + (H - B - T) / 2, '已违约，退出评分样本', {'text-anchor': 'middle', 'font-size': 12, fill: css('--muted')}); }
+  if (f.def_m != null) { const xi = f.def_m >= n ? W - R : x(f.def_m); el('line', {x1: xi, x2: xi, y1: T, y2: H - B + 8, stroke: css('--accent'), 'stroke-width': 2}, svg);
+    txt(svg, Math.min(xi, W - R - 4), T + 12, f.def_m >= n ? `违约 ${f.def_ym} →` : `违约 ${f.def_ym}`, {'text-anchor': 'end', 'font-size': 11, fill: css('--accent'), 'font-weight': 700}); }
+  $('#tlLegend').innerHTML = lanes.map(l => `<span><i style="background:var(${REL_COLOR[l]})"></i>${l}</span>`).join('') + '<span class="muted">股权=股东/实控人/对外投资；担保连带=共同被告；交易=客户/供应商/债务人；兄弟企业=共同控股股东或共同创投；二跳=客户的客户、供应商的供应商</span>';
+}
+function drawNet(){
+  const f = cur, box = $('#netChart'); box.innerHTML = '';
+  const W = 560, H = 420, mx = 104, my = 30;
+  const xs = f.nodes.map(n => n.x), ys = f.nodes.map(n => n.y);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const s = Math.min((W - 2 * mx) / Math.max(x1 - x0, 1e-6), (H - 2 * my) / Math.max(y1 - y0, 1e-6));
+  const ox = mx - x0 * s + ((W - 2 * mx) - (x1 - x0) * s) / 2, oy = my - y0 * s + ((H - 2 * my) - (y1 - y0) * s) / 2;
+  const P = n => [ox + n.x * s, oy + n.y * s];
+  const svg = el('svg', {viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '多层级关联网络'}, box);
+  const byId = Object.fromEntries(f.nodes.map(n => [n.id, n]));
+  const f0 = f.nodes[0], [cx, cy] = P(f0);
+  f.edges.forEach(e => { const a = byId[e.s], b = byId[e.t]; if (!a || !b) return; const [ax, ay] = P(a), [bx, by] = P(b);
+    el('line', {x1: ax, y1: ay, x2: bx, y2: by, stroke: css('--rule'), 'stroke-width': 1.2}, svg);
+    if (b.ring === 2) txt(svg, ax + (bx - ax) * .5, ay + (by - ay) * .5 - 3, e.rel, {'text-anchor': 'middle', 'font-size': 10, fill: css('--muted')}); });
+  f.nodes.forEach(n => {
+    const [nx, ny] = P(n), evs = (n.ev || []).filter(e => e.m <= month), recent = evs.some(e => e.m > month - 3);
+    const g = el('g', {class: 'node'}, svg);
+    const col = n.ring === 0 ? css('--ink') : evs.length ? css('--accent') : css('--muted');
+    if (recent && n.ring > 0) el('circle', {cx: nx, cy: ny, r: 7, fill: 'none', stroke: css('--accent'), 'stroke-width': 2, class: 'pulse'}, g);
+    const r = n.ring === 0 ? 10 : 5.5 + Math.min(evs.length, 4);
+    if (n.listed) el('rect', {x: nx - r, y: ny - r, width: 2 * r, height: 2 * r, rx: 2, fill: col}, g); else el('circle', {cx: nx, cy: ny, r, fill: col}, g);
+    let t;
+    if (n.ring === 0) t = txt(g, nx, ny + r + 14, n.label, {'text-anchor': 'middle', 'font-size': 12.5, 'font-weight': 700, fill: css('--ink')});
+    else { const a = Math.atan2(ny - cy, nx - cx); t = txt(g, nx + (r + 5) * Math.cos(a), ny + (r + 5) * Math.sin(a) + 4, n.label, {'text-anchor': Math.cos(a) >= 0 ? 'start' : 'end', 'font-size': 11.5, fill: css('--ink')}); }
+    g.addEventListener('mousemove', ev => showTip(ev, `<b>${n.label}</b>${n.ring ? '（' + (n.ring === 1 ? '一跳' : '二跳') + '·' + n.rel + '）' : ''}<br>` +
+      (evs.length ? evs.slice(-6).map(e => `${e.ym} ${e.kind}`).join('<br>') : '截至当月无风险事件')));
+    g.addEventListener('mouseleave', hideTip);
+  });
+}
+function drawAttr(){
+  const a = cur.months[month].shap || {groups: [], top: []};
+  const mx = Math.max(.1, ...a.groups.map(g => Math.abs(g[1])));
+  $('#attrBars').innerHTML = a.groups.map(([g, v]) => { const w = Math.abs(v) / mx * 50;
+    return `<div class="row"><span>${g}</span><div class="bar"><span style="left:${v >= 0 ? 50 : 50 - w}%;width:${w}%;background:${v >= 0 ? 'var(--accent)' : 'var(--blue)'}"></span><span style="left:50%;width:1px;background:var(--rule)"></span></div><b class="mono" style="text-align:right">${v >= 0 ? '+' : ''}${v.toFixed(2)}</b></div>`; }).join('');
+  $('#attrList').innerHTML = a.top.map(([n, v, val]) => `<li><span>${n}<span class="muted">${val != null ? '（' + val + '）' : ''}</span></span><b style="color:${v >= 0 ? 'var(--accent)' : 'var(--blue)'}">${v >= 0 ? '+' : ''}${v.toFixed(2)}</b></li>`).join('');
+}
+
+/* ---------- 预警工作台 ---------- */
+const AH = [['ym', '月份'], ['firm', '企业'], ['industry', '行业'], ['p4', '风险分位'], ['p1', '仅自身分位'], ['driver', '主要驱动'], ['src', '近 3 月关联事件'], ['out', '6 个月内违约']];
+let aSort = ['ym', -1];
+function initAlerts(){
+  const A = D.alerts;
+  const opt = (sel, vals, all) => { sel.innerHTML = `<option value="">${all}</option>` + vals.map(v => `<option>${v}</option>`).join(''); sel.onchange = drawAlerts; };
+  opt($('#aSrc'), [...new Set(A.flatMap(a => a.src_list))].sort(), '全部');
+  opt($('#aInd'), [...new Set(A.map(a => a.industry))].sort(), '全部');
+  opt($('#aYear'), [...new Set(A.map(a => a.ym.slice(0, 4)))].sort(), '全部');
+  $('#aOut').onchange = drawAlerts;
+  $('#aHead').innerHTML = AH.map(([k, l]) => `<th data-k="${k}">${l}</th>`).join('') + '<th></th>';
+  $$('#aHead th[data-k]').forEach(th => th.onclick = () => { aSort = [th.dataset.k, aSort[0] === th.dataset.k ? -aSort[1] : -1]; drawAlerts(); });
+  const s = D.alert_stats;
+  $('#aStats').innerHTML = [[s.n.toLocaleString(), '首次预警（企业-观察年）'], [pp(s.hit), '6 个月内违约比例'], [pp(s.base), '同期全样本 6 个月违约率'],
+    [s.lift.toFixed(1) + '×', '命中率相对基准'], [pp(s.capture), '违约事件被提前预警的比例']].map(([v, l]) => `<div class="card stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  drawAlerts();
+}
+function drawAlerts(){
+  const src = $('#aSrc').value, ind = $('#aInd').value, yr = $('#aYear').value, out = $('#aOut').value;
+  let A = D.alerts.filter(a => (!src || a.src_list.includes(src)) && (!ind || a.industry === ind) && (!yr || a.ym.startsWith(yr)) && (out === '' || String(a.out) === out));
+  const [k, dir] = aSort; A = A.slice().sort((a, b) => (a[k] > b[k] ? 1 : a[k] < b[k] ? -1 : 0) * dir);
+  $('#aCount').textContent = `${A.length.toLocaleString()} 条，命中 ${A.filter(a => a.out).length}`;
+  $('#aBody').innerHTML = A.slice(0, 400).map(a => `<tr><td class="mono">${a.ym}</td><td>${a.firm}</td><td>${a.industry}</td><td class="mono">${pct(a.p4)}</td><td class="mono muted">${pct(a.p1)}</td>
+    <td>${a.driver}</td><td>${a.src || '<span class="muted">—</span>'}</td><td>${a.out ? '<span class="yes">是</span>' : '<span class="no">否</span>'}</td>
+    <td>${a.detail ? `<a data-f="${a.firm}" data-m="${a.m}">查看全景</a>` : ''}</td></tr>`).join('');
+  $$('#aBody a[data-f]').forEach(x => x.onclick = () => openFirm(x.dataset.f, +x.dataset.m));
+}
+
+/* ---------- 情景推演 ---------- */
+const lg = v => Math.pow(10, -3 + v / 100 * 2.7);           // 0.1% ~ 50%
+const ilg = p => (Math.log10(p) + 3) / 2.7 * 100;
+function initSim(){
+  $('#sBaseRate').textContent = pp(D.base_rate6);
+  $('#sFirm').innerHTML = '<option value="">自定义基准</option>' + D.firms.map(f => `<option value="${f.id}">${f.id} · ${f.industry}（仅自身模型 ${pp(f.months[Math.min(f.focus_month ?? 11, f.months.length - 1)].pd1)}）</option>`).join('');
+  $('#sFirm').onchange = e => { const f = D.firms.find(x => x.id === e.target.value); if (f) $('#sBase').value = ilg(Math.max(.001, f.months[Math.min(f.focus_month ?? 11, f.months.length - 1)].pd1)); calc(); };
+  $('#sEvents').innerHTML = D.multipliers.map((m, i) => `<label class="ev"><input type="checkbox" data-i="${i}"><div><b>${m.name}</b><span>乘数 <span class="m">${m.mult.toFixed(2)}×</span>（95% CI ${m.lo.toFixed(2)}—${m.hi.toFixed(2)}）${m.lo <= 1 ? ' · 区间含 1' : ''}</span></div></label>`).join('');
+  $$('#sEvents input').forEach(c => c.onchange = calc); $('#sBase').oninput = calc; calc();
+}
+function calc(){
+  const p0 = lg(+$('#sBase').value); $('#sBaseV').textContent = pp(p0);
+  const on = $$('#sEvents input').filter(c => c.checked).map(c => D.multipliers[+c.dataset.i]);
+  let odds = p0 / (1 - p0); on.forEach(m => odds *= m.mult); const p = odds / (1 + odds);
+  $('#sOut').textContent = pp(p); $('#sNeedle').style.left = `calc(${Math.min(100, Math.max(0, ilg(p)))}% - 1px)`;
+  const lvl = p >= .10 ? ['var(--accent)', '#fff', '冻结未用额度，30 天内完成复核，评估追加担保或压降敞口'] : p >= .03 ? ['var(--accent-soft)', 'var(--accent)', '列入重点关注：复核关联方事件、核实回款与担保履约'] :
+    p >= .01 ? [css('--paper-2'), 'var(--amber)', '提高监测频率，要求客户说明关联方事件的影响'] : [css('--paper-2'), 'var(--muted)', '维持正常管理'];
+  $('#sAction').style.background = lvl[0]; $('#sAction').style.color = lvl[1]; $('#sAction').innerHTML = '<b>建议动作：</b>' + lvl[2];
+  $('#sBreak').innerHTML = on.length ? '几率乘数：' + on.map(m => `${m.name} ×${m.mult.toFixed(2)}`).join(' · ') : '未勾选事件：结果等于基准。';
+}
+
+/* ---------- 方法与证据 ---------- */
+function forest(box, rows, opt){
+  box.innerHTML = ''; const W = 560, rh = 26, T = 10, L = opt.L || 200, R = 70, H = T + rows.length * rh + 30;
+  const svg = el('svg', {viewBox: `0 0 ${W} ${H}`}, box);
+  const lo = opt.lo, hi = opt.hi, log = opt.log, f = v => log ? Math.log(v) : v;
+  const x = v => L + (f(Math.min(Math.max(v, lo), hi)) - f(lo)) / (f(hi) - f(lo)) * (W - L - R);
+  opt.ticks.forEach(t => { el('line', {x1: x(t), x2: x(t), y1: T - 4, y2: H - 22, stroke: t === opt.ref ? css('--muted') : css('--rule-2'), 'stroke-dasharray': t === opt.ref ? '4 3' : ''}, svg); txt(svg, x(t), H - 8, opt.fmt(t), {'text-anchor': 'middle', 'font-size': 11}); });
+  rows.forEach((r, i) => { const y = T + i * rh + rh / 2, sig = opt.sig(r), c = sig ? css('--accent') : css('--muted');
+    txt(svg, L - 10, y + 4, r.name, {'text-anchor': 'end', 'font-size': 12});
+    el('line', {x1: x(r.lo), x2: x(r.hi), y1: y, y2: y, stroke: c, 'stroke-width': 2.4, 'stroke-linecap': 'round'}, svg);
+    el('circle', {cx: x(r.v), cy: y, r: 4.5, fill: c}, svg);
+    const t = txt(svg, W - R + 8, y + 4, opt.fmtv(r.v), {'font-size': 11.5, 'font-family': 'IBM Plex Mono'}); t.style.fill = sig ? css('--accent') : css('--ink-2'); });
+}
+function drawEvidence(){
+  $('#eLead').innerHTML = D.evidence.lead;
+  forest($('#eDelta'), D.evidence.deltas, {lo: -.03, hi: .05, ticks: [-.02, 0, .02, .04], ref: 0, fmt: t => (t > 0 ? '+' : '') + t.toFixed(2), fmtv: v => (v > 0 ? '+' : '') + v.toFixed(4), sig: r => r.lo > 0, L: 230});
+  forest($('#eMult'), D.multipliers.map(m => ({name: m.name, v: m.mult, lo: m.lo, hi: m.hi})), {lo: .5, hi: 8, log: true, ticks: [.5, 1, 2, 4, 8], ref: 1, fmt: t => t + '', fmtv: v => v.toFixed(2) + '×', sig: r => r.lo > 1, L: 200});
+  forest($('#eOR'), D.evidence.or, {lo: .3, hi: 4, log: true, ticks: [.5, 1, 2, 3], ref: 1, fmt: t => t + '', fmtv: v => v.toFixed(2), sig: r => r.lo > 1, L: 170});
+  forest($('#eMech'), D.evidence.mech, {lo: -3, hi: 4, ticks: [-2, 0, 2, 4], ref: 0, fmt: t => (t > 0 ? '+' : '') + t, fmtv: v => (v > 0 ? '+' : '') + v.toFixed(2), sig: r => r.lo > 0 || r.hi < 0, L: 230});
+}
+function redraw(){ if (cur) drawFirm(); if ($('#v-evid').classList.contains('on')) drawEvidence(); buildList(); }
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
+$('#foot').innerHTML = D.footer;
+initAlerts(); initSim();
+openFirm(D.firms[0].id);
+const q = new URLSearchParams(location.search); if (['pano', 'alert', 'sim', 'evid'].includes(q.get('v'))) go(q.get('v'));
+</script>
+</body>
+</html>

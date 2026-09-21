@@ -125,3 +125,28 @@ SW_L1 = {"11": "农林牧渔", "21": "采掘", "22": "基础化工", "23": "钢�
          "42": "交通运输", "43": "房地产", "45": "商贸零售", "46": "社会服务", "48": "银行", "49": "非银金融",
          "51": "综合", "61": "建筑材料", "62": "建筑装饰", "63": "电力设备", "64": "机械设备", "65": "国防军工",
          "71": "计算机", "72": "传媒", "73": "通信", "74": "煤炭", "75": "石油石化", "76": "环保", "77": "美容护理"}
+
+
+# 特征中文名（作图与产品原型共用）
+FEAT_CN = {
+    "impair_to_rev": "资产减值/营收", "sw_l1_c": "申万一级行业", "fund_n": "持股基金家数", "cfo_to_due": "现金流到期债务保障",
+    "firm_age": "上市年限", "cash_ratio": "现金比率", "tang_lev": "有形资产负债率", "top1_stake": "第一大股东持股",
+    "log_ta": "总资产(对数)", "fin_exp_ratio": "财务费用率", "wc_to_loan": "营运资金/借款", "d_roa": "ROA变动",
+    "lev": "资产负债率", "d_cfo_to_debt": "现金债务比变动", "inst_ratio": "机构持股比例", "cfo_to_debt": "现金债务总额比",
+    "int_debt_ratio": "带息负债比率", "quick_ratio": "速动比率", "cur_ratio": "流动比率", "rel_rev_growth": "相对同业营收增速",
+    "pagerank": "PageRank中心度", "period_exp_ratio": "期间费用率", "nb_codef_n": "共同被告数", "own_viol": "违规处罚(衰减)",
+    "ltloan_to_ta": "长期借款/总资产", "roa": "ROA", "roe": "ROE", "gross_margin": "毛利率", "net_margin": "净利率",
+    "own_trade": "经营性欠款被诉", "own_other_def": "其他案件被诉", "own_def_n12": "近12月被诉次数", "own_def_amt12": "近12月被诉金额",
+    "hop1_all": "一跳关联风险", "hop2_all": "二跳关联风险", "ppr3": "三跳扩散风险", "deg": "关联度数", "deg_listed": "上市关联方数",
+    "kcore": "k-core", "group_size": "控制圈规模", "group_fin": "控制圈违约暴露", "group_risk": "控制圈风险", "peer_fin_rate": "同业违约率",
+    "peer_roa": "同业ROA", "rel_roa": "相对同业ROA", "peer_rev_growth": "同业营收增速", "rel_d_roa": "相对同业ROA变动",
+    "log_rev": "营业收入(对数)", "rev_growth": "营收增速", "eq_mult": "权益乘数", "int_cover": "利息保障倍数", "cfo_to_cl": "现金流动负债比",
+    "cfo_to_intdebt": "现金带息债务比", "ebit_margin": "息税前利润率", "cfo_to_profit": "现金/利润总额", "d_lev": "负债率变动",
+    "d_gross_margin": "毛利率变动", "d_cur_ratio": "流动比率变动", "loss": "当年亏损", "loss_2y": "连续两年亏损", "own_probe12": "近12月立案调查",
+    "sell_major": "大股东净减持", "sell_exec": "高管净减持", "sell_person": "个人股东净减持", "top1_person": "第一大股东为自然人",
+    "soe": "国有控股", "top10_nonfin": "前十大非金融股东持股", "board_c": "上市板块", "own_fin_old": "24-36月前违约",
+    "own_sec_fraud": "虚假陈述被诉", "own_viol_severe": "严重违规处罚", "peer_n": "同业家数", "peer_loss_rate": "同业亏损率",
+    "peer_d_roa": "同业ROA变动", "group_listed": "控制圈上市公司数", "grs": "图谱风险分GRS",
+    "rev_growth": "营收增速", "net_margin": "净利率", "ebit_margin": "息税前利润率", "own_def_amt12": "近12月被诉金额", "own_def_n12": "近12月被诉次数",
+    "own_fin_old": "24-36月前违约", "hop1_all": "一跳关联风险", "hop2_all": "二跳关联风险",
+}

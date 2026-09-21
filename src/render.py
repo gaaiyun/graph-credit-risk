@@ -10,8 +10,9 @@ import docx_helpers as dh
 
 
 def _md_inline(text):
-    """**加粗** → <b>；其余转义"""
+    """**加粗** → <b>，[文字](链接) → <a>；其余转义"""
     t = html.escape(text)
+    t = re.sub(r"\[(.+?)\]\((.+?)\)", r'<a href="\2">\1</a>', t)
     return re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
 
 
