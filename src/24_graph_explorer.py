@@ -94,9 +94,23 @@ def js(path, var, obj):
     return path.stat().st_size
 
 
+# 票据承兑人名单（票交所，自行抓取）：主体 → 名单类型与最近一期
+bill = {}
+bp = WORK / "bill_events.parquet"
+if bp.exists():
+    B = pd.read_parquet(bp)
+    b_listed = {norm_name(f): c for c, f in zip(M.index, M.full) if isinstance(f, str)}
+    B["node"] = np.where(B.name.map(b_listed).notna(), "C:" + B.name.map(b_listed).astype(str), "E:" + B.name)
+    B = B[B.node.isin(idx.index)]
+    for node, g in B.groupby("node"):
+        ov = g[g.kind == "overdue"]
+        un = g[g.kind == "undisclosed"]
+        bill[int(idx[node])] = [len(ov), len(un), (ov.ym.max() if len(ov) else ""), (un.ym.max() if len(un) else "")]
+    print(f"[bill] 名单主体命中图谱 {len(bill):,}（逾期 {sum(1 for v in bill.values() if v[0]):,}）")
+
 size = js(GX / "data" / "nodes.js", "nodes", {
     "n": len(ids), "listed": L, "names": names, "types": types, "xy": xy.ravel().tolist(),
-    "code": codes, "short": short, "ind": ind, "prov": prov, "board": board, "rel": REL})
+    "code": codes, "short": short, "ind": ind, "prov": prov, "board": board, "rel": REL, "bill": bill})
 print(f"[nodes] {len(ids)}（上市 {L}）{size / 1e6:.1f} MB")
 
 meta = {}
