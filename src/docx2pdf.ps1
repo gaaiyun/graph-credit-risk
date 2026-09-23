@@ -1,4 +1,4 @@
-param([string]$docx)
+﻿param([string]$docx)
 $pdf = [System.IO.Path]::ChangeExtension($docx, ".pdf")
 $word = New-Object -ComObject Word.Application
 $word.Visible = $false

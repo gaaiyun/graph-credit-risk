@@ -27,10 +27,14 @@ def to_docx(blocks, path, title, subtitle, abstract, keywords):
     dh.para(doc, abstract, size=9.5, indent=False, bold_prefix="摘要：", space_after=2)
     dh.para(doc, keywords, size=9.5, indent=False, bold_prefix="关键词：", space_after=4)
     fig_n = tab_n = 0
+    new_page = False
     for b in blocks:
         k = b[0]
         if k == "h2":
-            dh.heading(doc, f"{b[2]} {b[3]}", 1)
+            h = dh.heading(doc, f"{b[2]} {b[3]}", 1)
+            if new_page:                                # 分页放在标题的“段前分页”上：正文恰好写满一页时不会多出空白页
+                h.paragraph_format.page_break_before = True
+                new_page = False
         elif k == "h3":
             dh.heading(doc, b[1], 2)
         elif k == "p":
@@ -53,9 +57,10 @@ def to_docx(blocks, path, title, subtitle, abstract, keywords):
             widths = b[5] if len(b) > 5 else None
             if cap.startswith("附表"):
                 tab_n -= 1
-            dh.table(doc, df, caption=cap if cap.startswith("附表") else f"表{tab_n} {cap}", note=note, col_widths=widths)
+            dh.table(doc, df, caption=cap if cap.startswith("附表") else f"表{tab_n} {cap}", note=note, col_widths=widths,
+                     split=b[6] if len(b) > 6 else False)
         elif k == "pagebreak":
-            dh.page_break(doc)
+            new_page = True
     doc.save(path)
 
 

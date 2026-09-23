@@ -44,9 +44,11 @@ print(f"[匹配] 关联方命中 {link.node.nunique():,} 个主体、{link.code.
 
 
 def flag_months(ev, kinds, label):
-    """ev: code/date/kind 事件表 → 每个企业-月是否在过去 12 个月内出现过该类名单。"""
-    e = ev[ev.kind.isin(kinds)][["code", "date"]].drop_duplicates()
-    m = dyn[["code", "t", "k", "S"]].merge(e, on="code", how="inner")
+    """ev: code/date/kind 事件表 → 每个企业-月是否在过去 12 个月内出现过该类名单。
+    关联方事件带观察年 t：企业-月只认当年图谱里的关联方，不用决策日之后才披露的关系。"""
+    on = ["code", "t"] if "t" in ev.columns else ["code"]
+    e = ev[ev.kind.isin(kinds)][on + ["date"]].drop_duplicates()
+    m = dyn[["code", "t", "k", "S"]].merge(e, on=on, how="inner")
     m = m[(m.date <= m.S) & (m.date > m.S - LOOKBACK)]
     key = set(zip(m.code, m.t, m.k))
     dyn[label] = [(c, t, k) in key for c, t, k in zip(dyn.code, dyn.t, dyn.k)]

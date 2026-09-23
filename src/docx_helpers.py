@@ -99,7 +99,8 @@ def _cell_border(cell, **kw):
         b.append(el)
 
 
-def table(doc, df, caption=None, col_widths=None, size=8.5, note=None):
+def table(doc, df, caption=None, col_widths=None, size=8.5, note=None, split=False):
+    """三线表。默认整表不跨页；split=True 时允许在行之间分页，表头在下一页重复。"""
     if caption:
         cp = doc.add_paragraph()
         cp.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -130,11 +131,13 @@ def table(doc, df, caption=None, col_widths=None, size=8.5, note=None):
         trPr = tr.get_or_add_trPr()
         cs = OxmlElement("w:cantSplit")
         trPr.append(cs)
+        if split and ri == 0:
+            trPr.append(OxmlElement("w:tblHeader"))                        # 跨页时重复表头
         for cell in row.cells:
             for p in cell.paragraphs:
                 p.paragraph_format.line_spacing = 1.0
                 p.paragraph_format.first_line_indent = Pt(0)
-                p.paragraph_format.keep_with_next = ri < len(t.rows) - 1      # 整表不跨页
+                p.paragraph_format.keep_with_next = (ri == 0) if split else ri < len(t.rows) - 1   # 默认整表不跨页
     if col_widths:
         for j, w in enumerate(col_widths):
             for row in t.rows:

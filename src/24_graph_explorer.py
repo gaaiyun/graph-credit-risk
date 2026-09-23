@@ -108,9 +108,47 @@ if bp.exists():
         bill[int(idx[node])] = [len(ov), len(un), (ov.ym.max() if len(ov) else ""), (un.ym.max() if len(un) else "")]
     print(f"[bill] 名单主体命中图谱 {len(bill):,}（逾期 {sum(1 for v in bill.values() if v[0]):,}）")
 
+# 工商登记（H 盘工商注册数据匹配结果）：非上市主体的所在地、注册资本、参保人数、规模、成立年份
+reg = {}
+rp = WORK / "node_registry.parquet"
+if rp.exists():
+    Rg = pd.read_parquet(rp)
+    Rg = Rg[Rg.node.isin(idx.index)]
+    for r in Rg.itertuples(index=False):
+        reg[int(idx[r.node])] = [str(getattr(r, "所属城市") or ""), str(getattr(r, "所属区县") or ""),
+                                 None if pd.isna(r.cap) else round(float(r.cap)), None if pd.isna(r.insured) else int(r.insured),
+                                 str(getattr(r, "企业规模") or "").replace("-", ""), None if pd.isna(r.est) else int(r.est.year)]
+    print(f"[工商] 图谱中 {len(reg):,} 个非上市主体附工商登记")
+# 公告风险事件：上市公司（巨潮股票栏目公告标题 + ST 变动）与发债主体（巨潮债券栏目，含非上市）
+ann = {}
+ANN_KINDS = ["debt_overdue", "bond_default", "shixin", "acct_frozen", "illegal_guar", "bankruptcy", "csrc_probe", "st_new",
+             "sh_distress", "share_frozen", "pledge_liq", "bond_issuer"]
+evs = []
+if (WORK / "alt_events.parquet").exists():
+    Ev = pd.read_parquet(WORK / "alt_events.parquet")
+    evs.append(Ev.assign(node="C:" + Ev.code)[["node", "date", "kind"]])
+if (WORK / "bond_events.parquet").exists():
+    evs.append(pd.read_parquet(WORK / "bond_events.parquet")[["node", "date"]].assign(kind="bond_issuer"))
+if evs:
+    Ev = pd.concat(evs, ignore_index=True)
+    Ev = Ev[Ev.kind.isin(ANN_KINDS) & Ev.node.isin(idx.index)].drop_duplicates().sort_values("date", ascending=False)
+    for node, g in Ev.groupby("node"):
+        ann[int(idx[node])] = [[ANN_KINDS.index(k), f"{d:%Y-%m}"] for k, d in zip(g.kind, g.date)][:40]
+    print(f"[公告] {len(ann):,} 个主体附公告风险事件（其中非上市 {sum(1 for i in ann if i >= L):,}）")
+# 股权质押比例（东方财富转载的中国结算数据）：上市公司各年年末
+pl = {}
+if (WORK / "pledge_panel.parquet").exists():
+    Pp = pd.read_parquet(WORK / "pledge_panel.parquet")
+    Pp["date"] = pd.to_datetime(Pp.date)
+    Pp = Pp[Pp.date.dt.month == 12].assign(node="C:" + Pp.code.astype(str).str.zfill(6))
+    Pp = Pp[Pp.node.isin(idx.index) & (Pp.pledge_ratio > 0)].sort_values("date")
+    for node, g in Pp.groupby("node"):
+        pl[int(idx[node])] = [[int(d.year), round(float(v), 1)] for d, v in zip(g.date, g.pledge_ratio)]
+    print(f"[质押] {len(pl):,} 家上市公司附年末股权质押比例")
+
 size = js(GX / "data" / "nodes.js", "nodes", {
     "n": len(ids), "listed": L, "names": names, "types": types, "xy": xy.ravel().tolist(),
-    "code": codes, "short": short, "ind": ind, "prov": prov, "board": board, "rel": REL, "bill": bill})
+    "code": codes, "short": short, "ind": ind, "prov": prov, "board": board, "rel": REL, "bill": bill, "reg": reg, "ann": ann, "pl": pl})
 print(f"[nodes] {len(ids)}（上市 {L}）{size / 1e6:.1f} MB")
 
 meta = {}

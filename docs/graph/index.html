@@ -151,6 +151,7 @@ aside h3:first-child{margin-top:0}
     <ul class="lg" id="famFilter"></ul>
     <h3>说明</h3>
     <p class="note">每个节点是一个主体（上市公司、非上市企业、自然人或机构），连线是该观察年建模图谱中的关系。坐标由 ForceAtlas2 在 2016—2023 年全部关系的并集图上计算，切换年份时节点位置不变。<br><b>出险</b>：决策日前 36 个月内作为被告被提起金融债务诉讼；经营欠款诉讼和违规处罚只在详情里列出（均按 12 个月半衰期加权）。<b>12 个月内违约</b>是事后结局：决策日（次年 4 月 30 日）后 12 个月内首次被提起金融债务诉讼，只对样本企业有定义。</p>
+    <p class="note"><b>工商登记、公告与质押</b>：非上市主体匹配全国工商注册数据，显示所在地、注册资本、参保人数与规模；上市公司列出巨潮公告里的债务逾期、账户冻结、违规担保、破产、立案调查、ST 以及控股股东层面的冻结与平仓，并给出历年年末股权质押比例；发债主体（含非上市集团母公司）列出债券栏目里的违约、展期与重整公告。</p>
     <p class="note"><b>票据承兑人名单</b>：来自上海票据交易所票据信息披露平台，含 5 期承兑人逾期与持续逾期名单（2021-12—2023-07，存档取回）和 44 期信用信息未披露名单（2023-01 起按月）。勾选左侧可只看上过名单的主体，详情里会列出期数与最近一期。</p>
     <p class="note">数据来源：CNRDS 诉讼仲裁、违规处罚、主要股东、关联交易等数据库，CSMAR 供应链研究数据库，上海票据交易所票据信息披露平台，沪深北交易所与申万宏源公开数据；主体名称按原始披露整理，仅用于研究展示。</p>
   </aside>
@@ -165,7 +166,7 @@ aside h3:first-child{margin-top:0}
 <script src="lib/graphology.umd.min.js"></script>
 <script src="lib/sigma.min.js"></script>
 <script>
-const META = {"2016": {"nodes": 40484, "pairs": 42586, "firms": 2844, "defaults": 60, "risky": 1251, "events": 4319}, "2017": {"nodes": 45790, "pairs": 48079, "firms": 3233, "defaults": 100, "risky": 1709, "events": 5900}, "2018": {"nodes": 48636, "pairs": 51143, "firms": 3230, "defaults": 88, "risky": 2961, "events": 8170}, "2019": {"nodes": 53254, "pairs": 55978, "firms": 3371, "defaults": 86, "risky": 3846, "events": 10638}, "2020": {"nodes": 58926, "pairs": 61781, "firms": 3704, "defaults": 58, "risky": 4707, "events": 12015}, "2021": {"nodes": 63551, "pairs": 67100, "firms": 4175, "defaults": 39, "risky": 4820, "events": 12507}, "2022": {"nodes": 65955, "pairs": 69924, "firms": 4539, "defaults": 29, "risky": 4748, "events": 12461}, "2023": {"nodes": 67585, "pairs": 71845, "firms": 4796, "defaults": 57, "risky": 4063, "events": 11964}}, YEARS = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023], BUILD = '20260923125858', HINT = ["东易日盛", "三峡新材", "创新医疗"];
+const META = {"2016": {"nodes": 40484, "pairs": 42586, "firms": 2844, "defaults": 60, "risky": 1251, "events": 4319}, "2017": {"nodes": 45790, "pairs": 48079, "firms": 3233, "defaults": 100, "risky": 1709, "events": 5900}, "2018": {"nodes": 48636, "pairs": 51143, "firms": 3230, "defaults": 88, "risky": 2961, "events": 8170}, "2019": {"nodes": 53254, "pairs": 55978, "firms": 3371, "defaults": 86, "risky": 3846, "events": 10638}, "2020": {"nodes": 58926, "pairs": 61781, "firms": 3704, "defaults": 58, "risky": 4707, "events": 12015}, "2021": {"nodes": 63551, "pairs": 67100, "firms": 4175, "defaults": 39, "risky": 4820, "events": 12507}, "2022": {"nodes": 65955, "pairs": 69924, "firms": 4539, "defaults": 29, "risky": 4748, "events": 12461}, "2023": {"nodes": 67585, "pairs": 71845, "firms": 4796, "defaults": 57, "risky": 4063, "events": 11964}}, YEARS = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023], BUILD = '20260924072257', HINT = ["东易日盛", "三峡新材", "创新医疗"];
 const VQ = location.protocol === 'file:' ? '' : `?v=${BUILD}`;
 const $ = s => document.querySelector(s);
 const REL = ['sup', 'cus', 'holder', 'invest', 'ctrl', 'person', 'affil', 'rp_other', 'codef', 'debtor', 'creditor'];
@@ -185,7 +186,9 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;',
 const fmt = n => n.toLocaleString('zh-CN');
 const store = {get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }};
 
-let N, L, NAMES, TYPES, XY, CODE, SHORT, IND, PROV, BOARD, LOWER, BBOX, BILL = {};
+let N, L, NAMES, TYPES, XY, CODE, SHORT, IND, PROV, BOARD, LOWER, BBOX, BILL = {}, REG = {}, ANN = {}, PL = {};
+const ANN_CN = ['债务逾期公告', '债券兑付违约', '被列为失信被执行人', '银行账户被冻结', '违规担保或担保逾期', '被申请破产或重整', '被立案调查', '新被实施 ST',
+  '控股股东或实控人失信、破产重整或债务违约', '股东所持股份被司法冻结', '股东质押平仓或被动减持', '债券违约、展期或破产重整公告（债券栏目）'];
 let Y = null, graph = null, renderer = null, focus = null, focusE = null, PAL = {};
 const state = {year: YEARS[YEARS.length - 1], mode: 'risk', fam: [1, 1, 1, 1], types: [1, 1, 1, 1, 1, 1], riskOnly: false, billOnly: false, sel: null, hop: 1, ego: false, path: null};
 
@@ -217,7 +220,7 @@ async function boot() {
     await loadScript(`data/nodes.js${VQ}`);
   } catch (e) { loading('没有找到 data/nodes.js。请保持 index.html 与 data、lib 文件夹在同一目录下打开。'); return; }
   const D = GXD.nodes;
-  N = D.n; L = D.listed; NAMES = D.names; TYPES = D.types; XY = D.xy; CODE = D.code; SHORT = D.short; IND = D.ind; PROV = D.prov; BOARD = D.board; BILL = D.bill || {};
+  N = D.n; L = D.listed; NAMES = D.names; TYPES = D.types; XY = D.xy; CODE = D.code; SHORT = D.short; IND = D.ind; PROV = D.prov; BOARD = D.board; BILL = D.bill || {}; REG = D.reg || {}; ANN = D.ann || {}; PL = D.pl || {};
   LOWER = NAMES.map(s => s.toLowerCase());
   const xs = [], ys = [];
   for (let i = 0; i < N; i += 7) { xs.push(XY[2 * i]); ys.push(XY[2 * i + 1]); }
@@ -423,6 +426,28 @@ function statusHtml(i) {
     if (b[0]) parts.push(`<b style="color:${PAL.crit}">承兑人逾期名单 ${b[0]} 期</b>（最近 ${b[2]}）`);
     if (b[1]) parts.push(`信用信息未披露名单 ${b[1]} 期（最近 ${b[3]}）`);
     h += `<div class="box" style="border-color:${PAL.seri}"><div style="font-size:12.5px">票交所票据承兑人名单：${parts.join('；')}</div></div>`;
+  }
+  const rg = REG[i];
+  if (rg) {
+    const parts = [(rg[0] || '') + (rg[1] || '')];
+    if (rg[2] != null) parts.push(`注册资本 ${fmt(rg[2])} 万`);
+    if (rg[3] != null) parts.push(`参保 ${fmt(rg[3])} 人`);
+    if (rg[4]) parts.push(rg[4] + '企业');
+    if (rg[5]) parts.push(`成立于 ${rg[5]}`);
+    h += `<div class="box"><div style="font-size:12.5px">工商登记：${parts.filter(Boolean).map(esc).join(' · ')}</div></div>`;
+  }
+  const an = ANN[i];
+  if (an) {
+    const cnt = {}, last = {};
+    an.forEach(([kk, d]) => { cnt[kk] = (cnt[kk] || 0) + 1; if (!last[kk] || d > last[kk]) last[kk] = d; });
+    const items = Object.keys(cnt).sort((a, b) => last[b].localeCompare(last[a])).map(kk => `${ANN_CN[kk]} ×${cnt[kk]}（最近 ${last[kk]}）`);
+    h += `<div class="box" style="border-color:${PAL.seri}"><div style="font-size:12.5px">公告风险事件（巨潮资讯网、ST 变动）：${items.join('；')}</div></div>`;
+  }
+  const pl = PL[i];
+  if (pl) {
+    const hi = Math.max(...pl.map(p => p[1]));
+    const items = pl.map(([yy, v]) => v >= 50 ? `<b style="color:${PAL.crit}">${yy} ${v}%</b>` : `${yy} ${v}%`);
+    h += `<div class="box"${hi >= 50 ? ` style="border-color:${PAL.seri}"` : ''}><div style="font-size:12.5px">股权质押比例（年末，占总股本）：${items.join(' · ')}</div></div>`;
   }
   const k = +TYPES[i];
   if (k === 5) h += '<p class="note">名称不完整：披露里只写了“LLC”“**医院”这类名称，不同企业的对手方可能被并到同一个节点上。</p>';
