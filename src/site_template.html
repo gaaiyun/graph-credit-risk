@@ -246,12 +246,24 @@ footer .copy .w{display:block;padding-top:16px;padding-bottom:20px}
 @media (max-width:1040px){.finds{grid-template-columns:1fr 1fr}.find,.find.f1,.find.f2{grid-column:span 1}.media{padding:24px 20px}}
 @media (max-width:600px){.finds{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){.hero .mesh,.ai .ring::before,.ai .ring::after{animation:none}}
+.btn.ghost{background:transparent;color:var(--blue);box-shadow:inset 0 0 0 1.5px var(--blue)}
+.btn.ghost:hover{background:var(--blue);color:#fff}
+.showcase{background:linear-gradient(180deg,#fff 0%,#FFF8EE 100%)}
+.gstats{display:grid;grid-template-columns:repeat(4,1fr);max-width:860px;margin:56px auto 0}
+.gstats div+div{border-left:1px solid var(--line-2)}
+.gstats b{display:block;font:600 40px/1.1 var(--num);letter-spacing:-.03em}
+.gstats span{font-size:14px;color:var(--muted)}
+.wide{max-width:1100px;margin:56px auto 0}
+.wide .media{padding:48px 56px}
+.shotlink{display:block}
+.shotlink:hover{text-decoration:none}
+@media (max-width:760px){.gstats{grid-template-columns:1fr 1fr;row-gap:20px}.gstats div:nth-child(3){border-left:0}.wide .media{padding:20px}}
 </style>
 </head>
 <body>
 <header class="nav" id="nav" data-ra-shift><div class="w">
   <a class="logo" href="./"><svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#0071E3"/><g stroke="#fff" stroke-width="2"><line x1="9" y1="9" x2="23" y2="12"/><line x1="9" y1="9" x2="13" y2="24"/><line x1="23" y1="12" x2="13" y2="24"/></g><circle cx="9" cy="9" r="3" fill="#fff"/><circle cx="23" cy="12" r="3" fill="#fff"/><circle cx="13" cy="24" r="3.6" fill="#FFC233"/></svg>关联风险全景</a>
-  <nav class="menu"><a href="#findings">核心结论</a><a href="#product">产品</a><a href="#ai">AI 风控助手</a><a href="#report">研究报告</a><a href="graph/">关联图谱</a></nav>
+  <nav class="menu"><a href="#findings">核心结论</a><a href="#product">产品</a><a href="#graph">全量关联图谱</a><a href="#ai">AI 风控助手</a><a href="#report">研究报告</a></nav>
   <div class="act"><a class="dl" href="{{PDF_URL}}">下载报告</a><a class="btn sm" href="app.html">进入产品</a></div>
 </div></header>
 
@@ -261,7 +273,7 @@ footer .copy .w{display:block;padding-top:16px;padding-bottom:20px}
     <p class="eyebrow rv">经营类客户关联图谱风控模型</p>
     <h1 class="rv" style="animation-delay:.08s">关联方一出事，<br><em>风险先到一步。</em></h1>
     <p class="sub rv" style="animation-delay:.16s">在 6.8 万个主体、7.2 万条关系的逐年关联网络上，捕捉股东、担保方与上下游的风险事件，提前 4 到 5 个月预警，并说清风险从哪条关系传来。</p>
-    <div class="ctas rv" style="animation-delay:.24s"><a class="btn" href="app.html">进入产品原型</a><a class="more" href="graph/">浏览全量关联图谱</a><a class="more" href="#ai" data-ask="">问 AI 风控助手</a></div>
+    <div class="ctas rv" style="animation-delay:.24s"><a class="btn" href="app.html">进入产品原型</a><a class="btn ghost" href="graph/">浏览全量关联图谱</a><a class="more" href="#ai" data-ask="">问 AI 风控助手</a></div>
   </div>
   <div class="stage rv" style="animation-delay:.32s">
     <img src="assets/hero_graph.jpg" alt="2023 年全量关联网络：67,585 个主体，橙色为出险主体，红色为 12 个月内违约企业" width="1600" height="1600">
@@ -295,11 +307,15 @@ footer .copy .w{display:block;padding-top:16px;padding-bottom:20px}
     <ul><li>月度风险分：动态模型对照仅自身特征模型</li><li>关联事件泳道与多层级网络联动回放</li><li>情景推演：叠加假设事件，给出建议动作</li></ul>
     <a class="more" href="app.html">打开全景视图</a></div>
     <div class="media m2"><div class="frame"><div class="bar"><i></i><i></i><i></i><span>关联风险全景 · 全景视图</span></div><img src="assets/shot_pano.jpg" alt="客户全景视图界面" loading="lazy"></div></div></div>
-  <div class="feat" data-rv><div class="txt"><div class="lab">全量关联图谱</div><h3>2016—2023 年，每个主体都可搜索、可追溯。</h3>
-    <p>逐年建模图谱实名开放：按名称或代码定位任一主体，查看关联方、二跳传导路径、公告风险事件、历年股权质押与工商登记。</p>
-    <ul><li>6.8 万主体，WebGL 实时渲染</li><li>按风险状态、主体类型、关系类型过滤</li><li>票交所承兑人名单与债券违约公告同屏标注</li></ul>
-    <a class="more" href="graph/">打开关联图谱</a></div>
-    <div class="media m3"><div class="frame"><div class="bar"><i></i><i></i><i></i><span>关联风险全景 · 全量关联图谱</span></div><img src="assets/shot_graph.jpg" alt="全量关联图谱界面" loading="lazy"></div></div></div>
+</div></section>
+
+<section class="sec c showcase" id="graph"><div class="w">
+  <p class="kicker" data-rv>全量关联图谱</p>
+  <h2 class="h2" data-rv>6.8 万个主体，一张图看全。</h2>
+  <p class="intro" data-rv>2016—2023 年逐年建模的关联图谱实名开放。按名称或股票代码定位任一主体，查看它的关联方、二跳传导路径、公告风险事件、历年股权质押与非上市主体的工商登记。</p>
+  <div class="ctas" data-rv style="margin-top:30px"><a class="btn" href="graph/">打开全量关联图谱</a><a class="more" href="graph/#y=2023&amp;n=600221">看海航控股的关联网络</a></div>
+  <div class="gstats" data-rv><div><b>67,585</b><span>个主体</span></div><div><b>71,845</b><span>对关联</span></div><div><b>4,063</b><span>个出险主体</span></div><div><b>8</b><span>个观察年，逐年回放</span></div></div>
+  <div class="wide" data-rv><div class="media m3"><a class="shotlink" href="graph/" aria-label="打开全量关联图谱"><div class="frame"><div class="bar"><i></i><i></i><i></i><span>关联风险全景 · 全量关联图谱</span></div><img src="assets/shot_graph.jpg" alt="全量关联图谱界面" loading="lazy"></div></a></div></div>
 </div></section>
 
 <section class="sec gray c ai" id="ai"><div class="w">

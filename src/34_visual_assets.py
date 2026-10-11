@@ -97,7 +97,7 @@ srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Quiet,
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 base_url = f"http://127.0.0.1:{srv.server_address[1]}"
 SHOTS = [("shot_pano", "/app.html?v=pano", 1440, 900, 2), ("shot_alert", "/app.html?v=alert", 1440, 900, 2),
-         ("shot_graph", "/graph/?v=shot#y=2023&n=002713", 1440, 860, 7)]
+         ("shot_graph", "/graph/?v=shot#y=2023&n=600221", 1440, 860, 7)]
 with sync_playwright() as p:
     b = p.chromium.launch(channel="chrome", headless=True, args=["--enable-unsafe-swiftshader", "--use-angle=swiftshader", "--ignore-gpu-blocklist"])
     for name, path, w, h, wait in SHOTS:
