@@ -76,9 +76,9 @@ mu = pd.read_csv(OUT / "dyn_multipliers.csv").iloc[::-1].reset_index(drop=True)
 fig, axes = plt.subplots(1, 2, figsize=(7.4, 3.5), dpi=200)
 
 
-def forest_ax(ax, labels, v, lo, hi, p=None, xt=(0.5, 1, 2, 3), xl=(0.3, 4.5)):
+def forest_ax(ax, labels, v, lo, hi, p=None, xt=(0.5, 1, 2, 3), xl=(0.3, 4.5), pos=STEEL, neg=GOLD):
     y = np.arange(len(v))
-    col = [ACC if l_ > 1 else (ACC2 if h_ < 1 else MUTED) for l_, h_ in zip(lo, hi)]
+    col = [pos if l_ > 1 else (neg if h_ < 1 else MUTED) for l_, h_ in zip(lo, hi)]
     ax.hlines(y, np.clip(lo, xl[0], xl[1]), np.clip(hi, xl[0], xl[1]), color=col, lw=1.7)
     ax.scatter(v, y, color=col, s=15, zorder=3)
     ax.axvline(1, color=MUTED, lw=0.8, ls="--")
@@ -97,7 +97,7 @@ def forest_ax(ax, labels, v, lo, hi, p=None, xt=(0.5, 1, 2, 3), xl=(0.3, 4.5)):
 forest_ax(axes[0], [r.replace("(连带)", "(担保连带)") for r in co.关系], co.OR.values, co.OR_lo.values, co.OR_hi.values)
 axes[0].set_title("年度截面：存在出险关联方的优势比", fontsize=8, color=INK, loc="left")
 axes[0].set_xlabel("控制自身财务、年份与行业；公司聚类", fontsize=6.8, color=MUTED)
-forest_ax(axes[1], mu["关联事件(近3个月)"].values, mu.事件乘数.values, mu.CI_lo.values, mu.CI_hi.values, xt=(0.5, 1, 2, 4, 8), xl=(0.3, 9))
+forest_ax(axes[1], mu["关联事件(近3个月)"].values, mu.事件乘数.values, mu.CI_lo.values, mu.CI_hi.values, xt=(0.5, 1, 2, 4, 8), xl=(0.3, 9), pos=JADE)
 axes[1].set_title("月度动态：近 3 个月关联事件的乘数", fontsize=8, color=INK, loc="left")
 axes[1].set_xlabel("未来 6 个月违约几率的倍数，以样本外自身模型评分为基准", fontsize=6.8, color=MUTED)
 fig.tight_layout()
@@ -157,8 +157,9 @@ def km(dur, ev):
     return np.array(out)
 
 
-ax.plot(grid, km(trg.dur, trg.post_def) * 100, color=BRAND, lw=2, label=f"关联方新出现债务诉讼后（n={len(trg)}）")
-ax.plot(grid, km(un.dur, un.ev) * 100, color=MUTED, lw=1.6, ls="--", label=f"未触发期间（n={len(un)}）")
+ax.fill_between(grid, km(trg.dur, trg.post_def) * 100, color=CORAL, alpha=0.08, lw=0)
+ax.plot(grid, km(trg.dur, trg.post_def) * 100, color=CORAL, lw=2, label=f"关联方新出现债务诉讼后（n={len(trg)}）")
+ax.plot(grid, km(un.dur, un.ev) * 100, color=DEEP, lw=1.5, ls="--", label=f"未触发期间（n={len(un)}）")
 ax.set_xlabel("自触发（或决策日）起的月数", fontsize=7.5, color=MUTED)
 ax.set_ylabel("累计首次违约率（%）", fontsize=7.5, color=MUTED)
 ax.legend(fontsize=6.8, loc="upper left")
@@ -176,7 +177,7 @@ show = [("三条显著渠道(股东/共同被告/债务人)", "全部年份", "�
 rows = [mon[(mon.触发口径 == a) & (mon.分层 == b)].iloc[0] for a, b, _ in show]
 y = np.arange(len(rows))[::-1]
 for yy, r, (_, _, lab) in zip(y, rows, show):
-    c = ACC if r.RR_lo > 1 else MUTED
+    c = CORAL if r.RR_lo > 1 else MUTED
     ax.hlines(yy, r.RR_lo, r.RR_hi, color=c, lw=1.8)
     ax.scatter([r.率比RR], [yy], color=c, s=18, zorder=3)
     ax.text(r.RR_hi * 1.06, yy, f"{r.率比RR:.2f}", va="center", fontsize=7, color=INK)

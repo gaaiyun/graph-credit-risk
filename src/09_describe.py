@@ -59,7 +59,7 @@ print(cmp.round(4).to_string())
 
 # 图 1：年度首次违约率（样本规模写在横轴标签里，不用双轴）
 fig, ax = plt.subplots(figsize=(6.4, 2.7), dpi=200)
-ax.bar(yr.t, yr.违约率 * 100, color=BRAND, width=0.58, zorder=2)
+ax.bar(yr.t, yr.违约率 * 100, color=ramp(["#9FD3CB", JADE, DEEP], yr.违约率), width=0.58, zorder=2)
 for x_, y_ in zip(yr.t, yr.违约率 * 100):
     ax.text(x_, y_ + 0.06, f"{y_:.2f}%", ha="center", fontsize=7.2, color=INK)
 ax.set_ylim(0, yr.违约率.max() * 100 * 1.22)
@@ -74,8 +74,8 @@ fig.savefig(FIG / "fig1_year.png")
 rel_s = rel.sort_values("提升倍数")
 fig, ax = plt.subplots(figsize=(6.4, 3.3), dpi=200)
 yy = np.arange(len(rel_s))
-ax.barh(yy + 0.19, rel_s.有风险邻居违约率 * 100, height=0.36, color=BRAND, label="存在出险的该类关联方", zorder=2)
-ax.barh(yy - 0.19, rel_s.无风险邻居违约率 * 100, height=0.36, color=COMPARE, label="不存在", zorder=2)
+ax.barh(yy + 0.19, rel_s.有风险邻居违约率 * 100, height=0.36, color=ramp(["#F3C677", GOLD, CORAL], rel_s.提升倍数), label="存在出险的该类关联方", zorder=2)
+ax.barh(yy - 0.19, rel_s.无风险邻居违约率 * 100, height=0.36, color=SOFT, label="不存在", zorder=2)
 for i, r_ in enumerate(rel_s.itertuples()):
     ax.text(r_.有风险邻居违约率 * 100 + 0.1, i + 0.19, f"×{r_.提升倍数:.1f}", va="center", fontsize=7, color=INK)
 ax.set_yticks(yy)

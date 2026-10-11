@@ -15,7 +15,7 @@ n_all, n_hit = att["预警数"], att["命中数"]
 
 fig, axes = plt.subplots(1, 2, figsize=(7.4, 3.2), dpi=200, gridspec_kw={"width_ratios": [1, 1.15]})
 ax = axes[0]
-cols = {"自身财务": "#A9B4C4", "自身事件与治理": "#D5DCE6", "静态图谱结构": BRAND_2, "一跳关联事件时序": BRAND, "多层级时序": NAVY}
+cols = {"自身财务": "#C9CFD8", "自身事件与治理": "#E6E1D6", "静态图谱结构": "#8CC8BF", "一跳关联事件时序": JADE, "多层级时序": DEEP}
 cats = list(comp.columns)
 left = np.zeros(len(cats))
 for g in comp.index:
@@ -24,7 +24,7 @@ for g in comp.index:
     for i, (l_, w_) in enumerate(zip(left, v)):
         if w_ > 0.07:
             ax.text((l_ + w_ / 2) * 100, len(cats) - 1 - i, f"{w_ * 100:.0f}", ha="center", va="center", fontsize=6.5,
-                    color="white" if g in ("一跳关联事件时序", "多层级时序", "静态图谱结构") else INK)
+                    color="white" if g in ("一跳关联事件时序", "多层级时序") else INK)
     left = left + v
 ax.set_yticks(range(len(cats))[::-1])
 ax.set_yticklabels([f"{c}（{n}）" for c, n in zip(cats, [n_all, n_hit, n_all - n_hit])], fontsize=7)
@@ -38,7 +38,7 @@ ax = axes[1]
 ch = chan.iloc[::-1]
 y = np.arange(len(ch))
 base = n_hit / n_all
-cc = [COMPARE if c == "无关联触发" else BRAND for c in ch.渠道]
+cc = [SOFT if c == "无关联触发" else col for c, col in zip(ch.渠道, ramp(["#F3C677", GOLD, CORAL], ch["6个月违约率"]))]
 ax.barh(y, ch["6个月违约率"] * 100, color=cc, height=0.6, zorder=2)
 ax.hlines(y, ch.CI_lo * 100, ch.CI_hi * 100, color=INK2, lw=0.8, zorder=3)
 for yy, r in zip(y, ch.itertuples()):

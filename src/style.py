@@ -1,4 +1,4 @@
-"""报告图表与网页共用的视觉规范：品牌蓝为主色，风险红只用于违约与出险，其余用灰阶。"""
+"""报告图表与网页共用的视觉规范：深蓝、钢蓝、青绿、金、珊瑚五色为主，按数值用渐变，不显著与对照用灰阶。"""
 import matplotlib
 
 matplotlib.use("Agg")
@@ -16,6 +16,18 @@ RISK = "#D92D20"      # 违约
 WARN = "#F79009"      # 出险 / 关注
 TEAL, ORANGE, VIOLET = "#0E9F8E", "#F28C28", "#6E56CF"   # 分类色（已过色盲与对比度校验）
 CATS = [BRAND, ORANGE, TEAL, VIOLET, "#C93C6E"]
+DEEP, STEEL, JADE, GOLD, CORAL = "#16324F", "#2F6DB5", "#2A9D8F", "#E9A23B", "#E4572E"
+SOFT = "#CDD3DC"
+
+
+def ramp(colors, v, lo=None, hi=None):
+    """按数值在给定色带上取色，用于单系列柱的渐变着色。"""
+    import numpy as np
+    from matplotlib.colors import LinearSegmentedColormap
+    v = np.asarray(v, float)
+    lo = v.min() if lo is None else lo
+    hi = v.max() if hi is None else hi
+    return LinearSegmentedColormap.from_list("r", colors)((v - lo) / max(hi - lo, 1e-9))
 
 
 def apply():
