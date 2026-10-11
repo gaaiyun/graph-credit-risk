@@ -30,11 +30,15 @@ def _plain(text):
     return re.sub(r"\*\*(.+?)\*\*", r"\1", text)
 
 
-def to_docx(blocks, path, title, subtitle, abstract, keywords):
+def to_docx(blocks, path, title, subtitle, abstract, keywords, site=None, contrib=None):
     doc = dh.new_doc()
     dh.heading(doc, title, 0)
-    p = dh.para(doc, subtitle, size=11, indent=False, align="center", space_after=6)
+    p = dh.para(doc, subtitle, size=11, indent=False, align="center", space_after=2 if site else 6)
+    if site:
+        dh.para(doc, site, size=9, indent=False, align="center", space_after=6)
     dh.para(doc, abstract, size=9.5, indent=False, bold_prefix="摘要：", space_after=2)
+    if contrib:
+        dh.para(doc, contrib, size=9.5, indent=False, bold_prefix="主要工作与创新：", space_after=2)
     dh.para(doc, keywords, size=9.5, indent=False, bold_prefix="关键词：", space_after=4)
     fig_n = tab_n = 0
     new_page = False
@@ -56,9 +60,10 @@ def to_docx(blocks, path, title, subtitle, abstract, keywords):
         elif k in ("fig", "svg"):
             if k == "svg" and not b[3]:
                 continue
-            fig_n += 1
+            appx = b[2].startswith("附图")
+            fig_n += 0 if appx else 1
             path_png = b[1] if k == "fig" else b[3]
-            dh.figure(doc, path_png, f"图{fig_n} {b[2]}", width_cm=b[4] if k == "fig" and len(b) > 4 and b[4] else 15.5,
+            dh.figure(doc, path_png, b[2] if appx else f"图{fig_n} {b[2]}", width_cm=b[4] if k == "fig" and len(b) > 4 and b[4] else 15.5,
                       note=(b[3] if k == "fig" and len(b) > 3 else None))
         elif k == "table":
             tab_n += 1

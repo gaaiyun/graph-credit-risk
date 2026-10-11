@@ -224,6 +224,7 @@
           try { const j = JSON.parse(p); const c = (j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content) || j.response || ''; if (c) { text += c; bd.innerHTML = md(text); log.scrollTop = log.scrollHeight; } } catch (e) {}
         }
       }
+      text = text.replace(/^\s*(?:这)?(?:属于|是)\s*[ABC]\s*类[^。\n]*[。\n]\s*/, '');
       if (!text) text = '没有得到回答，请换一种问法再试。';
       bd.innerHTML = md(text) + (src.length ? `<div class="ra-src">参考：${src.map(s => `<i>${esc(s)}</i>`).join('')}</div>` : '');
       history.push({role: 'user', content: q}, {role: 'assistant', content: text}); history = history.slice(-6);
