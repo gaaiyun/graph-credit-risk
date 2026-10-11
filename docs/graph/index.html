@@ -9,45 +9,45 @@
 <meta name="description" content="经营类客户风控模型的逐年关联图谱（2016—2023，实名）：每家企业一个节点，可搜索定位、点击查看关联关系与二跳传导路径">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg stroke='%23454b54' stroke-width='2'%3E%3Cline x1='8' y1='9' x2='23' y2='12'/%3E%3Cline x1='8' y1='9' x2='12' y2='24'/%3E%3Cline x1='23' y1='12' x2='12' y2='24'/%3E%3C/g%3E%3Ccircle cx='8' cy='9' r='4' fill='%232a78d6'/%3E%3Ccircle cx='23' cy='12' r='4' fill='%231baf7a'/%3E%3Ccircle cx='12' cy='24' r='4.5' fill='%23d03b3b'/%3E%3C/svg%3E">
 <style>
-:root{color-scheme:dark;
-  --paper:#070D1C;--paper-2:#101A30;--card:#0B1325;--ink:#E6ECF5;--ink-2:#A9B6CC;--muted:#6B7A93;--rule:#1C2742;--rule-2:#152039;--accent:#5B8DEF;
-  --shadow:0 12px 32px rgba(0,0,0,.45);
-  --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
-  --mono:"DIN Alternate","DIN Pro",Bahnschrift,Consolas,monospace;
-  --f0:#3E7BFA;--f1:#22B8A7;--f2:#F2A541;--f3:#33456A;
-  --t0:#6E9CF5;--t1:#22B8A7;--t2:#F2A541;--t3:#5B6B88;
-  --crit:#FF4D4F;--seri:#FFAA33;
-  --n0:#7FA7F0;--n1:#2F4C7E;--n2:#3A4F78;--n3:#334466;--dim:#121B30;--edge-a:.26;
+:root{color-scheme:light;
+  --paper:#FFFFFF;--paper-2:#F5F5F7;--card:#FBFBFD;--ink:#1D1D1F;--ink-2:#424245;--muted:#86868B;--rule:#E5E5EA;--rule-2:#F0F0F2;--accent:#0071E3;
+  --shadow:0 12px 32px rgba(0,0,0,.10);
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  --mono:"SF Pro Display","Segoe UI",Bahnschrift,sans-serif;
+  --f0:#0071E3;--f1:#12A594;--f2:#F08A24;--f3:#A7B0BE;
+  --t0:#0071E3;--t1:#12A594;--t2:#F08A24;--t3:#A7B0BE;
+  --crit:#E5352B;--seri:#F5A623;
+  --n0:#3B7DDD;--n1:#A3B8D8;--n2:#BAC6D8;--n3:#CBD3DF;--dim:#EEF0F4;--edge-a:.34;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{background:var(--paper);color:var(--ink);font:14px/1.6 var(--sans);display:flex;flex-direction:column;overflow:hidden;-webkit-font-smoothing:antialiased}
 button,select,input{font:inherit;color:inherit}
-::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#22304F;border-radius:4px}::-webkit-scrollbar-track{background:transparent}
-header.top{display:flex;align-items:center;gap:12px 20px;padding:0 18px;height:58px;border-bottom:1px solid var(--rule);background:#08101F;flex-wrap:nowrap;position:relative;z-index:10}
-.brand{display:flex;align-items:center;gap:10px;min-width:0;color:#fff;text-decoration:none}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#D2D2D7;border-radius:8px}::-webkit-scrollbar-track{background:transparent}
+header.top{display:flex;align-items:center;gap:12px 20px;padding:0 18px;height:58px;border-bottom:1px solid var(--rule);background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(20px);flex-wrap:nowrap;position:relative;z-index:10}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;color:var(--ink);text-decoration:none}
 .brand b{font-size:16px;font-weight:800;white-space:nowrap;letter-spacing:.02em}
 .brand span{font-size:12px;color:var(--muted);white-space:nowrap;padding-left:10px;border-left:1px solid var(--rule)}
 .search{position:relative;flex:1 1 280px;max-width:520px;margin-left:12px}
-.search input{width:100%;height:36px;padding:0 14px 0 36px;border:1px solid #22304F;border-radius:4px;background:#0E1830 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7A93' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.5' y1='16.5' x2='21' y2='21'/%3E%3C/svg%3E") no-repeat 11px center;outline:none;color:var(--ink)}
+.search input{width:100%;height:36px;padding:0 14px 0 36px;border:1px solid #D2D2D7;border-radius:8px;background:#FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2386868B' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.5' y1='16.5' x2='21' y2='21'/%3E%3C/svg%3E") no-repeat 11px center;outline:none;color:var(--ink)}
 .search input::placeholder{color:var(--muted)}
-.search input:focus{border-color:var(--accent);background-color:#101C38}
-.sug{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#0E1830;border:1px solid #22304F;border-radius:4px;box-shadow:var(--shadow);max-height:380px;overflow:auto;display:none}
+.search input:focus{border-color:var(--accent);background-color:#FFFFFF}
+.sug{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#FFFFFF;border:1px solid #D2D2D7;border-radius:8px;box-shadow:var(--shadow);max-height:380px;overflow:auto;display:none}
 .sug.on{display:block}
 .sug .it{padding:8px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:1px solid var(--rule-2)}
 .sug .it:last-child{border-bottom:0}
-.sug .it.act,.sug .it:hover{background:#15234A}
+.sug .it.act,.sug .it:hover{background:#F0F5FF}
 .sug .it small{color:var(--muted);white-space:nowrap;font-size:12px}
 .sug .it.off{opacity:.55}
 .sug .empty{padding:10px 12px;color:var(--muted);font-size:13px}
 .ctl{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);white-space:nowrap}
-.ctl select{height:36px;border:1px solid #22304F;background:#0E1830;border-radius:4px;padding:0 10px}
+.ctl select{height:36px;border:1px solid #D2D2D7;background:#FFFFFF;border-radius:8px;padding:0 10px}
 .links{display:flex;gap:8px;margin-left:auto}
-.btn{display:inline-flex;align-items:center;height:34px;border:1px solid #22304F;background:transparent;border-radius:4px;padding:0 14px;font-size:13px;cursor:pointer;text-decoration:none;color:var(--ink-2);white-space:nowrap}
-.btn:hover{border-color:var(--accent);color:#fff}
+.btn{display:inline-flex;align-items:center;height:34px;border:1px solid #D2D2D7;background:transparent;border-radius:8px;padding:0 14px;font-size:13px;cursor:pointer;text-decoration:none;color:var(--ink-2);white-space:nowrap}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
 .btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.pri:hover{background:#4677DB}
+.btn.pri:hover{background:#0077ED;color:#fff}
 main{flex:1;display:grid;grid-template-columns:272px minmax(0,1fr) 390px;min-height:0}
 aside{overflow:auto;padding:16px 18px 24px;background:var(--card)}
 aside.left{border-right:1px solid var(--rule)}
@@ -56,9 +56,9 @@ aside h3{font-size:12.5px;color:var(--muted);font-weight:700;margin:22px 0 10px}
 aside h3:first-child{margin-top:0}
 .stats{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule);border-left:1px solid var(--rule)}
 .stat{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:8px 10px}
-.stat .v{font:700 19px/1.25 var(--mono);color:#fff}
+.stat .v{font:600 19px/1.25 var(--mono);color:var(--ink)}
 .stat .l{font-size:11.5px;color:var(--muted)}
-.seg{display:flex;border:1px solid #22304F;border-radius:4px;overflow:hidden}
+.seg{display:flex;border:1px solid #D2D2D7;border-radius:8px;overflow:hidden}
 .seg button{flex:1;border:0;background:transparent;padding:6px 8px;font-size:12.5px;cursor:pointer;color:var(--ink-2)}
 .seg button.on{background:var(--accent);color:#fff}
 .lg{list-style:none;margin:0;padding:0;font-size:13px;color:var(--ink-2)}
@@ -70,22 +70,22 @@ aside h3:first-child{margin-top:0}
 .ln{width:18px;height:3px;border-radius:2px;flex:none;display:inline-block}
 .note{font-size:12px;color:var(--muted);line-height:1.75}
 .note b{color:var(--ink-2);font-weight:600}
-#stage{position:relative;min-height:0;background:radial-gradient(ellipse at 50% 45%,#0D1830 0%,#070D1C 70%);overflow:hidden}
+#stage{position:relative;min-height:0;background:#FBFBFD;overflow:hidden}
 #sg{position:absolute;inset:0}
 #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;background:var(--paper);z-index:5}
 #loading.off{display:none}
-.zoom{position:absolute;right:14px;bottom:14px;display:flex;flex-direction:column;border:1px solid #22304F;border-radius:4px;overflow:hidden;z-index:4}
-.zoom button{width:34px;height:34px;border:0;border-bottom:1px solid #22304F;background:#0E1830;cursor:pointer;font-size:16px;color:var(--ink-2)}
+.zoom{position:absolute;right:14px;bottom:14px;display:flex;flex-direction:column;border:1px solid #D2D2D7;border-radius:8px;overflow:hidden;z-index:4}
+.zoom button{width:34px;height:34px;border:0;border-bottom:1px solid #D2D2D7;background:#FFFFFF;cursor:pointer;font-size:16px;color:var(--ink-2)}
 .zoom button:last-child{border-bottom:0}
-.zoom button:hover{color:#fff;background:#15234A}
+.zoom button:hover{color:var(--accent);background:#F0F5FF}
 .hint{position:absolute;left:14px;bottom:14px;font-size:12px;color:var(--muted);z-index:4;pointer-events:none}
 .empty-detail{color:var(--muted);font-size:13.5px;line-height:1.85}
 .empty-detail b{color:var(--ink-2)}
-.dt h2{font-size:20px;line-height:1.35;margin:0 0 8px;font-weight:800;word-break:break-all;color:#fff}
+.dt h2{font-size:20px;line-height:1.35;margin:0 0 8px;font-weight:800;word-break:break-all;color:var(--ink)}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.tag{font-size:12px;border:1px solid #22304F;border-radius:3px;padding:0 7px;color:var(--ink-2);background:#0E1830}
+.tag{font-size:12px;border:1px solid #D2D2D7;border-radius:3px;padding:0 7px;color:var(--ink-2);background:#FFFFFF}
 .status{display:flex;align-items:center;gap:8px;font-weight:600;margin:10px 0}
-.box{border:1px solid var(--rule);border-left:3px solid #2A3B60;padding:9px 12px;background:#0E1830;margin:8px 0;font-size:13px;color:var(--ink-2)}
+.box{border:1px solid var(--rule);border-left:3px solid #C9D7EE;padding:9px 12px;background:#FFFFFF;margin:8px 0;font-size:13px;color:var(--ink-2)}
 .box .row{display:flex;justify-content:space-between;gap:10px}
 .box .row span:first-child{color:var(--muted)}
 .box .row b{font-family:var(--mono);font-weight:600;color:var(--ink)}
@@ -100,7 +100,7 @@ aside h3:first-child{margin-top:0}
 .nl.two li{display:block}
 .nl.two .meta{display:block;white-space:normal;padding:0 0 0 14px;margin:0}
 .more{border:0;background:transparent;color:var(--accent);cursor:pointer;padding:4px 0;font-size:12.5px}
-.path{border:1px solid var(--rule);padding:8px 10px;margin:6px 0;cursor:pointer;font-size:12.5px;line-height:1.75;background:#0E1830;color:var(--ink-2)}
+.path{border:1px solid var(--rule);padding:8px 10px;margin:6px 0;cursor:pointer;font-size:12.5px;line-height:1.75;background:#FFFFFF;color:var(--ink-2)}
 .path:hover,.path.on{border-color:var(--accent)}
 .path a{color:var(--ink);font-weight:600;cursor:pointer}
 .path .r{color:var(--muted)}
@@ -119,7 +119,7 @@ aside h3:first-child{margin-top:0}
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="https://gaaiyun.github.io/graph-credit-risk/"><svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#fff" stroke-width="2"><line x1="9" y1="9" x2="23" y2="12"/><line x1="9" y1="9" x2="13" y2="24"/><line x1="23" y1="12" x2="13" y2="24"/></g><circle cx="9" cy="9" r="3.2" fill="#fff"/><circle cx="23" cy="12" r="3.2" fill="#fff"/><circle cx="13" cy="24" r="3.8" fill="#FFB020"/></svg><b>关联风险全景</b><span>全量关联图谱 · 2016—2023</span></a>
+  <a class="brand" href="https://gaaiyun.github.io/graph-credit-risk/"><svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#1D1D1F" stroke-width="2"><line x1="9" y1="9" x2="23" y2="12"/><line x1="9" y1="9" x2="13" y2="24"/><line x1="23" y1="12" x2="13" y2="24"/></g><circle cx="9" cy="9" r="3.2" fill="#1D1D1F"/><circle cx="23" cy="12" r="3.2" fill="#1D1D1F"/><circle cx="13" cy="24" r="3.8" fill="#FFB020"/></svg><b>关联风险全景</b><span>全量关联图谱 · 2016—2023</span></a>
   <div class="search">
     <input id="q" type="search" autocomplete="off" placeholder="搜索企业全称、简称或股票代码，回车定位" aria-label="搜索企业">
     <div class="sug" id="sug" role="listbox"></div>
@@ -160,7 +160,7 @@ aside h3:first-child{margin-top:0}
 <script src="lib/graphology.umd.min.js"></script>
 <script src="lib/sigma.min.js"></script>
 <script>
-const META = {"2016": {"nodes": 40484, "pairs": 42586, "firms": 2844, "defaults": 60, "risky": 1251, "events": 4319}, "2017": {"nodes": 45790, "pairs": 48079, "firms": 3233, "defaults": 100, "risky": 1709, "events": 5900}, "2018": {"nodes": 48636, "pairs": 51143, "firms": 3230, "defaults": 88, "risky": 2961, "events": 8170}, "2019": {"nodes": 53254, "pairs": 55978, "firms": 3371, "defaults": 86, "risky": 3846, "events": 10638}, "2020": {"nodes": 58926, "pairs": 61781, "firms": 3704, "defaults": 58, "risky": 4707, "events": 12015}, "2021": {"nodes": 63551, "pairs": 67100, "firms": 4175, "defaults": 39, "risky": 4820, "events": 12507}, "2022": {"nodes": 65955, "pairs": 69924, "firms": 4539, "defaults": 29, "risky": 4748, "events": 12461}, "2023": {"nodes": 67585, "pairs": 71845, "firms": 4796, "defaults": 57, "risky": 4063, "events": 11964}}, YEARS = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023], BUILD = '20261011161200', HINT = ["东易日盛", "三峡新材", "创新医疗"];
+const META = {"2016": {"nodes": 40484, "pairs": 42586, "firms": 2844, "defaults": 60, "risky": 1251, "events": 4319}, "2017": {"nodes": 45790, "pairs": 48079, "firms": 3233, "defaults": 100, "risky": 1709, "events": 5900}, "2018": {"nodes": 48636, "pairs": 51143, "firms": 3230, "defaults": 88, "risky": 2961, "events": 8170}, "2019": {"nodes": 53254, "pairs": 55978, "firms": 3371, "defaults": 86, "risky": 3846, "events": 10638}, "2020": {"nodes": 58926, "pairs": 61781, "firms": 3704, "defaults": 58, "risky": 4707, "events": 12015}, "2021": {"nodes": 63551, "pairs": 67100, "firms": 4175, "defaults": 39, "risky": 4820, "events": 12507}, "2022": {"nodes": 65955, "pairs": 69924, "firms": 4539, "defaults": 29, "risky": 4748, "events": 12461}, "2023": {"nodes": 67585, "pairs": 71845, "firms": 4796, "defaults": 57, "risky": 4063, "events": 11964}}, YEARS = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023], BUILD = '20261011164905', HINT = ["东易日盛", "三峡新材", "创新医疗"];
 const VQ = location.protocol === 'file:' ? '' : `?v=${BUILD}`;
 const $ = s => document.querySelector(s);
 const REL = ['sup', 'cus', 'holder', 'invest', 'ctrl', 'person', 'affil', 'rp_other', 'codef', 'debtor', 'creditor'];
