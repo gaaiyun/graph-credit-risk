@@ -34,8 +34,11 @@ def to_docx(blocks, path, title, subtitle, abstract, keywords, site=None, contri
     doc = dh.new_doc()
     dh.heading(doc, title, 0)
     p = dh.para(doc, subtitle, size=11, indent=False, align="center", space_after=2 if site else 6)
-    if site:
-        dh.para(doc, site, size=9, indent=False, align="center", space_after=6)
+    if site:                                            # 网址：加粗、加大、红色
+        sp = doc.add_paragraph()
+        sp.alignment = dh.WD_ALIGN_PARAGRAPH.CENTER
+        sp.paragraph_format.space_after = dh.Pt(6)
+        dh.set_font(sp.add_run(site), size=13, bold=True, color="D92D20")
     dh.para(doc, abstract, size=9.5, indent=False, bold_prefix="摘要：", space_after=2)
     if contrib:
         dh.para(doc, contrib, size=9.5, indent=False, bold_prefix="主要工作与创新：", space_after=2)
