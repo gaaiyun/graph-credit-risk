@@ -3,169 +3,311 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>关联图谱风控模型</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%231c1f23%22/%3E%3Cpath d=%22M9 22L16 10L23 22%22 stroke=%22%23f0773a%22 stroke-width=%222.4%22 fill=%22none%22/%3E%3Ccircle cx=%2216%22 cy=%2210%22 r=%223%22 fill=%22%23f0773a%22/%3E%3Ccircle cx=%229%22 cy=%2222%22 r=%222.6%22 fill=%22%23ebe6dc%22/%3E%3Ccircle cx=%2223%22 cy=%2222%22 r=%222.6%22 fill=%22%23ebe6dc%22/%3E%3C/svg%3E">
-<meta name="description" content="基于应用图谱信息的经营类客户风控模型构建：以A股非金融上市公司关联网络为代理样本的数据分析报告">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>关联风险全景 · 经营类客户关联图谱风控</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23060C1A'/%3E%3Cg stroke='%23fff' stroke-width='2'%3E%3Cline x1='9' y1='9' x2='23' y2='12'/%3E%3Cline x1='9' y1='9' x2='13' y2='24'/%3E%3Cline x1='23' y1='12' x2='13' y2='24'/%3E%3C/g%3E%3Ccircle cx='9' cy='9' r='3' fill='%23fff'/%3E%3Ccircle cx='23' cy='12' r='3' fill='%23fff'/%3E%3Ccircle cx='13' cy='24' r='3.6' fill='%23FFB020'/%3E%3C/svg%3E">
+<meta name="description" content="经营类客户关联图谱风控模型：关联事件预警、预警分级与风险归因">
 <style>
+@font-face{font-family:"Manrope";src:url(assets/fonts/manrope-latin.woff2) format("woff2");font-weight:400 800;font-display:swap;
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2190-2199,U+2212,U+2215}
 :root{
-  --paper:#f6f3ec;--paper-2:#eee8dc;--card:#fbf9f4;--ink:#1c1f23;--ink-2:#454b54;--muted:#7b8794;--rule:#d8d1c3;
-  --accent:#c2410c;--accent-soft:#f3dccd;--blue:#2563eb;--green:#15803d;--shadow:0 1px 0 rgba(28,31,35,.04),0 8px 24px -16px rgba(28,31,35,.25);
-  --serif:"Noto Serif SC","Songti SC","SimSun",serif;--sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+  --night:#050B18;--night-2:#0A1428;--navy:#0B1F44;--blue:#1D5BD8;--blue-2:#1546B0;--sky:#6E9CF5;--amber:#FFB020;--red:#FF4D4F;--teal:#0E9F8E;
+  --ink:#0F172A;--ink-2:#475569;--muted:#94A3B8;--line:#E2E8F0;--line-2:#F1F5F9;--warn:#F59E0B;--node:#A9B4C4;
+  --sans:"Manrope","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  --num:"Manrope","PingFang SC","Microsoft YaHei",sans-serif;
+  --ease:cubic-bezier(.2,.7,.2,1);
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#141619;--paper-2:#1b1e22;--card:#1a1d21;--ink:#ebe6dc;--ink-2:#bdb7ab;--muted:#8b919a;--rule:#2d3137;
-  --accent:#f0773a;--accent-soft:#3a2418;--blue:#6ea0ff;--green:#4ade80;--shadow:0 8px 24px -16px rgba(0,0,0,.6);}}
-:root[data-theme="dark"]{
-  --paper:#141619;--paper-2:#1b1e22;--card:#1a1d21;--ink:#ebe6dc;--ink-2:#bdb7ab;--muted:#8b919a;--rule:#2d3137;
-  --accent:#f0773a;--accent-soft:#3a2418;--blue:#6ea0ff;--green:#4ade80;--shadow:0 8px 24px -16px rgba(0,0,0,.6);}
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.85;
-  -webkit-font-smoothing:antialiased;
-  background-image:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--ink) 6%,transparent) 1px,transparent 0);background-size:22px 22px}
-a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:3px}
-.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
-header.mast{border-bottom:1px solid var(--rule);padding:18px 0 34px;position:relative}
-.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.kicker b{color:var(--accent);font-weight:500}
-h1.title{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5.2vw,58px);line-height:1.14;letter-spacing:-.01em;margin:26px 0 12px;max-width:17em}
-h1.title em{font-style:normal;color:var(--accent)}
-.sub{font-family:var(--serif);font-size:clamp(16px,2vw,20px);color:var(--ink-2);margin:0 0 26px;max-width:40em}
-.lede{font-size:17px;max-width:46em;border-left:3px solid var(--accent);padding:4px 0 4px 16px;color:var(--ink)}
-.cta{display:inline-flex;align-items:center;gap:10px;margin-top:18px;background:var(--ink);color:var(--paper);text-decoration:none;border-radius:999px;padding:10px 18px;font-weight:700;font-size:15px;box-shadow:var(--shadow);transition:transform .15s}
-.ctas{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.ctas .cta{margin-top:0}
-.cta.alt{background:transparent;color:var(--ink);border:1px solid var(--ink);box-shadow:none}
-.cta:hover{transform:translateY(-1px)}.cta span{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;opacity:.75}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:30px;border-top:2px solid var(--ink);border-bottom:1px solid var(--rule)}
-.kpi{padding:16px 14px 14px;border-right:1px solid var(--rule)}
-.kpi:last-child{border-right:0}
-.kpi .v{font-family:var(--serif);font-weight:900;font-size:clamp(26px,3.4vw,40px);line-height:1.05}
-.kpi .v small{font-size:.45em;font-weight:600;color:var(--muted);margin-left:2px}
-.kpi .l{font-size:13px;color:var(--ink-2);margin-top:6px;line-height:1.5}
-.theme-btn{background:none;border:1px solid var(--rule);color:var(--ink-2);font-family:var(--mono);font-size:11px;padding:2px 10px;border-radius:999px;cursor:pointer;margin-left:12px;letter-spacing:.05em}
-.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px;padding:40px 0 80px}
-nav.toc{position:sticky;top:24px;align-self:start;font-size:13.5px;line-height:1.6}
-nav.toc .h{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted);margin-bottom:10px}
-nav.toc a{display:block;color:var(--ink-2);text-decoration:none;padding:5px 0 5px 12px;border-left:2px solid var(--rule)}
-nav.toc a.l2{padding-left:24px;font-size:12.5px;color:var(--muted)}
-nav.toc a:hover,nav.toc a.on{color:var(--accent);border-left-color:var(--accent)}
-main{max-width:780px;min-width:0}
-main h2{font-family:var(--serif);font-weight:900;font-size:clamp(24px,3vw,32px);margin:56px 0 8px;line-height:1.25;display:flex;gap:14px;align-items:baseline}
-main h2 .n{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--accent);letter-spacing:.06em}
-main h3{font-family:var(--serif);font-weight:600;font-size:20px;margin:34px 0 6px}
-main p{margin:10px 0;color:var(--ink)}
-main p.note{font-size:13px;color:var(--muted);line-height:1.7}
-figure{margin:22px 0 26px}
-figure .card{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:10px;box-shadow:var(--shadow)}
-figure img{width:100%;height:auto;display:block}
-figcaption{font-size:13px;color:var(--ink-2);margin-top:9px;line-height:1.65}
-figcaption b{font-family:var(--serif);color:var(--ink)}
-.tbl{overflow-x:auto;margin:18px 0 24px;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
-table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
-th,td{padding:7px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--rule)}
-th:first-child,td:first-child{text-align:left}
-thead th{font-weight:700;font-size:12.5px;color:var(--ink-2);border-bottom:1px solid var(--ink)}
-tr.hl td{background:var(--accent-soft)}
-.tcap{font-family:var(--serif);font-size:14px;font-weight:600;margin:24px 0 6px}
-.callout{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--accent);padding:14px 18px;border-radius:4px;margin:22px 0}
-.callout .t{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--accent);margin-bottom:4px}
-.svgchart{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:14px 14px 6px;box-shadow:var(--shadow)}
-.svgchart svg{width:100%;height:auto;display:block}
-.svgchart text{font-family:var(--sans);fill:var(--ink-2)}
-.explorer{background:var(--card);border:1px solid var(--rule);border-radius:6px;box-shadow:var(--shadow);overflow:hidden}
-.tabs{display:flex;border-bottom:1px solid var(--rule);overflow-x:auto}
-.tabs button{flex:1;min-width:120px;background:none;border:0;border-right:1px solid var(--rule);padding:11px 12px;font-family:var(--sans);font-size:13.5px;color:var(--ink-2);cursor:pointer;text-align:left}
-.tabs button:last-child{border-right:0}
-.tabs button.on{background:var(--paper-2);color:var(--ink);box-shadow:inset 0 -2px 0 var(--accent)}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:#fff;color:var(--ink);font:16px/1.85 var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--blue);text-decoration:none}
+img{display:block;max-width:100%}
+.w{max-width:1200px;margin:0 auto;padding:0 32px}
+/* ---------- 导航 ---------- */
+.nav{position:fixed;inset:0 0 auto 0;z-index:50;transition:background .25s,border-color .25s;border-bottom:1px solid transparent}
+.nav.solid{background:rgba(5,11,24,.86);backdrop-filter:saturate(160%) blur(12px);border-bottom-color:rgba(255,255,255,.08)}
+.nav .w{display:flex;align-items:center;height:68px;gap:44px}
+.logo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:17px;letter-spacing:.04em;white-space:nowrap}
+.menu{display:flex;gap:34px}
+.menu a{color:rgba(255,255,255,.66);font-size:14.5px;transition:color .15s}
+.menu a:hover,.menu a.on{color:#fff}
+.nav .act{margin-left:auto;display:flex;gap:12px;align-items:center}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:10px;height:46px;padding:0 26px;border-radius:999px;font-size:15px;font-weight:600;letter-spacing:.02em;white-space:nowrap;transition:all .25s var(--ease)}
+.btn::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);transition:left .6s var(--ease)}
+.btn:hover::after{left:120%}
+.btn.pri{background:linear-gradient(135deg,#2E6BFF,#1D5BD8 60%,#1546B0);color:#fff;box-shadow:0 10px 30px rgba(46,107,255,.38),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn.pri:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(46,107,255,.48),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn.out{color:#fff;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.04);backdrop-filter:blur(8px)}
+.btn.out:hover{border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.1)}
+.btn.sm{height:36px;padding:0 16px;font-size:13.5px}
+.btn .ar{font-family:var(--num);transition:transform .18s}
+.btn:hover .ar{transform:translateX(3px)}
+/* ---------- 首屏 ---------- */
+.hero{position:relative;background:var(--night);color:#fff;overflow:hidden;min-height:760px}
+.hero .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:64px 64px;
+  -webkit-mask-image:radial-gradient(ellipse 70% 70% at 30% 40%,#000 20%,transparent 75%);mask-image:radial-gradient(ellipse 70% 70% at 30% 40%,#000 20%,transparent 75%)}
+.hero .net{position:absolute;right:-6%;top:-4%;width:min(64vw,980px);aspect-ratio:1;background:url(assets/hero_graph.jpg) center/cover no-repeat;
+  -webkit-mask-image:radial-gradient(circle at 55% 50%,#000 38%,transparent 70%);mask-image:radial-gradient(circle at 55% 50%,#000 38%,transparent 70%);opacity:.95}
+.hero .glow{position:absolute;inset:-20%;background:
+  radial-gradient(38% 42% at 18% 22%,rgba(46,98,255,.30),transparent 70%),
+  radial-gradient(30% 36% at 72% 18%,rgba(126,87,255,.20),transparent 70%),
+  radial-gradient(34% 40% at 64% 78%,rgba(14,159,142,.16),transparent 70%);filter:blur(10px);animation:aurora 22s ease-in-out infinite alternate}
+@keyframes aurora{0%{transform:translate3d(0,0,0) rotate(0deg)}50%{transform:translate3d(3%,-2%,0) rotate(4deg)}100%{transform:translate3d(-2%,3%,0) rotate(-3deg)}}
+.hero .net{transition:transform .9s var(--ease);will-change:transform}
+.hero .net::after{content:"";position:absolute;inset:0;background:inherit;animation:breathe 14s ease-in-out infinite alternate;opacity:.0}
+@keyframes breathe{to{opacity:.35;transform:scale(1.02)}}
+.hero .fade{position:absolute;left:0;right:0;bottom:0;height:160px;background:linear-gradient(to bottom,transparent,var(--night))}
+.hero .w{position:relative;padding-top:184px;padding-bottom:64px}
+.tagline{display:inline-flex;align-items:center;gap:10px;font-size:13.5px;color:#C9D6F0;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 14px 5px 6px;background:rgba(255,255,255,.04)}
+.tagline b{background:var(--blue);color:#fff;font-weight:600;border-radius:999px;padding:1px 10px;font-size:12.5px}
+.hero h1{font-size:clamp(36px,5vw,62px);line-height:1.16;font-weight:700;letter-spacing:-.01em;margin:26px 0 22px;max-width:12.5em}
+.hero h1 em{font-style:normal;background:linear-gradient(92deg,#FFD27A 0%,#FFB020 45%,#FF7A45 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{font-size:18px;line-height:1.8;color:#9FB0CD;max-width:31em;margin:0 0 40px}
+.hero .ctas{display:flex;flex-wrap:wrap;gap:14px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);margin-top:88px;position:relative;border-radius:14px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.10);
+  backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.metrics::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(110,156,245,.9),rgba(255,176,32,.8),transparent)}
+.metrics .kpi{padding:26px 28px 26px}
+.metrics .kpi+.kpi{border-left:1px solid rgba(255,255,255,.08)}
+.metrics .v{font:700 46px/1 var(--num);letter-spacing:-.01em;color:#fff}
+.metrics .v small{font-size:24px;color:var(--sky);margin-left:3px}
+.metrics .l{font-size:13.5px;color:#8D9DBB;margin-top:12px;line-height:1.65;max-width:17em}
+.rv{opacity:0;transform:translateY(14px);animation:rv .8s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes rv{to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.rv{animation:none;opacity:1;transform:none}}
+/* ---------- 数据底座 ---------- */
+.src{border-bottom:1px solid var(--line)}
+.src .w{display:flex;align-items:center;gap:40px;padding-top:30px;padding-bottom:30px;flex-wrap:wrap}
+.src h4{margin:0;font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap}
+.src ul{display:flex;flex-wrap:wrap;gap:12px 38px;margin:0;padding:0;list-style:none}
+.src li{font-size:15px;font-weight:600;color:#64748B;letter-spacing:.02em}
+/* ---------- 章节通用 ---------- */
+.sec{padding:112px 0}
+.kicker{font-size:14px;font-weight:700;color:var(--blue);margin:0 0 14px}
+.h2{font-size:clamp(28px,3.3vw,42px);line-height:1.25;font-weight:700;letter-spacing:-.005em;margin:0 0 20px;max-width:24em}
+.intro{font-size:18px;line-height:1.85;color:var(--ink-2);max-width:40em;margin:0}
+.intro b{color:var(--ink)}
+/* 结论 */
+.finds{display:grid;grid-template-columns:repeat(4,1fr);margin-top:64px;position:relative}
+.finds::before{content:"";position:absolute;left:0;top:0;height:2px;width:0;background:linear-gradient(90deg,var(--blue),#7E57FF 50%,var(--amber));transition:width 1.4s var(--ease)}
+.finds.in::before{width:100%}
+.find{padding:28px 28px 0 0}
+.find+.find{padding-left:28px;border-left:1px solid var(--line)}
+.find .no{font:700 14px/1 var(--num);color:var(--blue);letter-spacing:.06em}
+.find h3{font-size:19px;font-weight:700;margin:16px 0 10px;line-height:1.45}
+.find p{font-size:14.5px;line-height:1.85;color:var(--ink-2);margin:0}
+.find p b{color:var(--ink);font-family:var(--num);font-size:16px}
+/* ---------- 产品 ---------- */
+.prod{background:var(--night);color:#fff;position:relative;overflow:hidden}
+.prod::before{content:"";position:absolute;width:900px;height:900px;right:-300px;top:120px;background:radial-gradient(circle,rgba(29,91,216,.22),transparent 62%)}
+.prod .kicker{color:var(--sky)}
+.prod .intro{color:#9FB0CD}
+.prod .intro b{color:#fff}
+.feat{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:72px;align-items:center;margin-top:104px;position:relative}
+.feat.rev{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.feat.rev .txt{order:2}
+.feat .lab{font-size:13px;font-weight:700;color:var(--amber);margin-bottom:12px}
+.feat h3{font-size:30px;line-height:1.3;font-weight:700;margin:0 0 18px}
+.feat p{font-size:16px;line-height:1.9;color:#9FB0CD;margin:0 0 22px}
+.feat ul{list-style:none;margin:0 0 28px;padding:0}
+.feat li{display:flex;gap:12px;font-size:15px;color:#C9D6F0;padding:9px 0;border-top:1px solid rgba(255,255,255,.08)}
+.feat li::before{content:"";flex:none;width:6px;height:6px;margin-top:11px;background:var(--amber)}
+.feat .go{font-size:15px;font-weight:600;color:#fff;border-bottom:1px solid var(--amber);padding-bottom:3px}
+.frame{position:relative;border-radius:12px;overflow:hidden;background:#0B1325;box-shadow:0 40px 90px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08);
+  transform:perspective(1600px) rotateY(var(--ry,-4deg)) rotateX(2deg);transition:transform .8s var(--ease),box-shadow .8s var(--ease)}
+.feat.rev .frame{--ry:4deg}
+.frame:hover{transform:perspective(1600px) rotateY(0) rotateX(0) translateY(-6px);box-shadow:0 50px 110px rgba(0,0,0,.6),0 0 0 1px rgba(110,156,245,.35),0 0 60px rgba(46,107,255,.18)}
+.frame::after{content:"";position:absolute;inset:0;border-radius:12px;padding:1px;background:linear-gradient(135deg,rgba(110,156,245,.6),transparent 35%,transparent 65%,rgba(255,176,32,.5));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.55;transition:opacity .6s}
+.frame:hover::after{opacity:1}
+.frame .bar{height:34px;display:flex;align-items:center;gap:8px;padding:0 14px;background:#111B30;border-bottom:1px solid rgba(255,255,255,.06)}
+.frame .bar i{width:11px;height:11px;border-radius:50%;background:#2A3754}
+.frame .bar span{margin-left:14px;font-size:12px;color:#7C8BA8;background:#0B1325;border-radius:4px;padding:2px 12px;font-family:var(--num)}
+.frame img{width:100%;height:auto}
+/* ---------- 报告全文 ---------- */
+.rep .head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-bottom:40px;border-bottom:1px solid var(--line)}
+.rep .btn.dark{background:var(--ink);color:#fff}
+.rep .btn.dark:hover{background:var(--blue)}
+.rep .lede{font-size:19px;line-height:1.9;color:var(--ink);max-width:46em;margin:36px 0 0}
+.rep .lede b{color:var(--blue);font-family:var(--num)}
+.body{display:grid;grid-template-columns:220px minmax(0,1fr);gap:64px;padding-top:56px}
+nav.toc{position:sticky;top:96px;align-self:start;font-size:14px;line-height:1.5}
+nav.toc .h{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:12px}
+nav.toc a{display:block;color:var(--ink-2);padding:7px 0 7px 14px;border-left:2px solid var(--line);transition:all .15s}
+nav.toc a.l2{padding-left:26px;font-size:13px;color:var(--muted)}
+nav.toc a:hover{color:var(--ink)}
+nav.toc a.on{color:var(--blue);border-left-color:var(--blue);font-weight:600}
+main{min-width:0;max-width:840px}
+main h2{font-size:30px;line-height:1.3;font-weight:700;margin:88px 0 24px;display:flex;gap:16px;align-items:baseline}
+main h2:first-child{margin-top:0}
+main h2 .n{font:700 30px/1 var(--num);color:var(--blue)}
+main h3{font-size:20px;font-weight:700;margin:44px 0 12px}
+main p{margin:14px 0;text-align:justify;color:#1E293B}
+main p b{color:var(--ink)}
+main p.note{font-size:13px;color:var(--muted);line-height:1.7;margin-top:8px}
+figure{margin:30px 0 36px}
+figcaption{font-size:14px;color:var(--ink-2);margin-top:14px;line-height:1.7}
+figcaption b{color:var(--ink);margin-right:8px}
+.tcap{font-size:15px;font-weight:700;margin:36px 0 12px}
+.tbl{overflow-x:auto;margin:0 0 8px;border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:11px 14px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line)}
+th.r,td.r{text-align:right}
+th:first-child,td:first-child{padding-left:0}
+thead th{font-weight:700;font-size:13.5px;color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#F8FAFC}
+.callout{display:flex;justify-content:space-between;align-items:center;gap:24px;background:var(--night);color:#C9D6F0;padding:24px 28px;margin:28px 0;border-radius:6px;font-size:15px;line-height:1.75}
+.callout .t{display:none}
+.callout a{color:#fff;font-weight:700;border-bottom:1px solid var(--amber)}
+/* 案例网络 */
+.explorer{border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--line);background:#F8FAFC}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:13px 20px;font:inherit;font-size:14.5px;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--blue);font-weight:700;background:#fff}
 .ex-body{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}
-.ex-graph{border-right:1px solid var(--rule);padding:8px}
+.ex-graph{border-right:1px solid var(--line);padding:8px}
 .ex-graph svg{width:100%;height:auto;display:block}
-.ex-side{padding:14px 16px;font-size:13.5px;max-height:520px;overflow:auto}
-.ex-side h4{font-family:var(--serif);margin:2px 0 6px;font-size:16px}
-.ex-side .meta{font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.7}
-.ex-side ul{padding-left:18px;margin:6px 0}
-.rank{display:flex;gap:10px;margin:10px 0}
-.rank>div{flex:1;border:1px solid var(--rule);border-radius:4px;padding:8px 10px}
-.rank .v{font-family:var(--serif);font-weight:900;font-size:22px}
-.rank .l{font-size:11.5px;color:var(--muted)}
+.ex-side{padding:20px 22px;font-size:14px;max-height:520px;overflow:auto}
+.ex-side h4{margin:0 0 6px;font-size:17px}
+.ex-side .meta{font-size:13px;color:var(--muted);line-height:1.7}
+.rank{display:grid;grid-template-columns:1fr 1fr;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.rank>div{padding:14px 0}
+.rank>div+div{border-left:1px solid var(--line);padding-left:16px}
+.rank .v{font:700 32px/1 var(--num)}
+.rank .l{font-size:12.5px;color:var(--ink-2);margin-top:8px}
 .node circle,.node rect{cursor:pointer;transition:transform .15s}
 .node:hover circle,.node:hover rect{transform:scale(1.25)}
 .node text{font-size:12.5px;fill:var(--ink);pointer-events:none}
-.edge line{stroke:var(--rule);stroke-width:1.3}
+.edge line{stroke:#CBD5E1;stroke-width:1.3}
 .edge text{font-size:11px;fill:var(--muted)}
-footer{border-top:1px solid var(--rule);padding:26px 0 40px;font-size:12.5px;color:var(--muted);line-height:1.8}
-.reveal{opacity:0;transform:translateY(10px);animation:rv .7s cubic-bezier(.2,.7,.2,1) forwards}
-@keyframes rv{to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.reveal{animation:none;opacity:1;transform:none}}
-@media (max-width:900px){.layout{grid-template-columns:1fr;gap:0}nav.toc{display:none}.kpis{grid-template-columns:repeat(2,1fr)}
-  .kpi:nth-child(2){border-right:0}.kpi:nth-child(-n+2){border-bottom:1px solid var(--rule)}.ex-body{grid-template-columns:1fr}.ex-graph{border-right:0;border-bottom:1px solid var(--rule)}}
+/* ---------- 尾部 ---------- */
+.end{background:var(--blue);color:#fff}
+.end .w{display:flex;align-items:center;justify-content:space-between;gap:28px;padding-top:72px;padding-bottom:72px;flex-wrap:wrap}
+.end h3{margin:0;font-size:32px;font-weight:700;line-height:1.3}
+.end p{margin:10px 0 0;color:rgba(255,255,255,.8);font-size:16px}
+.end .btn{background:#fff;color:var(--blue)}
+.end .btn:hover{background:var(--night);color:#fff}
+footer{background:var(--night);color:#7C8BA8;font-size:13.5px;line-height:1.9}
+footer .w{display:grid;grid-template-columns:1.2fr 1fr 2fr;gap:56px;padding-top:64px;padding-bottom:48px}
+footer .fb{color:#fff;font-weight:700;font-size:17px;margin-bottom:12px;display:flex;align-items:center;gap:10px;letter-spacing:.04em}
+footer h5{color:#fff;font-size:14px;margin:0 0 12px;font-weight:600}
+footer a{color:#A9B7D0;display:block}
+footer a:hover{color:#fff}
+footer .copy{border-top:1px solid rgba(255,255,255,.08);font-size:12.5px}
+footer .copy .w{display:block;padding-top:18px;padding-bottom:18px}
+[data-rv]{opacity:0;transform:translateY(28px);filter:blur(6px);transition:opacity .9s var(--ease),transform .9s var(--ease),filter .9s var(--ease)}
+[data-rv].in{opacity:1;transform:none;filter:none}
+.progress{position:fixed;left:0;top:0;height:2px;width:0;z-index:60;background:linear-gradient(90deg,#2E6BFF,#7E57FF,#FFB020)}
+.sec.white-fade{background:linear-gradient(180deg,#F5F8FF 0%,#fff 220px)}
+.kicker{display:inline-flex;align-items:center;gap:10px}
+.kicker::before{content:"";width:22px;height:2px;background:linear-gradient(90deg,var(--blue),#7E57FF)}
+.prod .kicker::before{background:linear-gradient(90deg,var(--sky),var(--amber))}
+@media (prefers-reduced-motion:reduce){[data-rv]{opacity:1;transform:none;filter:none;transition:none}.hero .glow{animation:none}.frame{transform:none}}
+@media (max-width:1040px){
+  .menu{display:none}.hero .net{width:110vw;right:-40%;opacity:.45}.metrics,.finds{grid-template-columns:repeat(2,1fr)}
+  .metrics .kpi:nth-child(3),.find:nth-child(3){padding-left:0;border-left:0}.metrics .kpi{padding-bottom:22px}.find{padding-bottom:28px}
+  .feat,.feat.rev{grid-template-columns:1fr;gap:36px;margin-top:72px}.feat.rev .txt{order:0}
+  .body{grid-template-columns:1fr}nav.toc{display:none}.ex-body{grid-template-columns:1fr}.ex-graph{border-right:0;border-bottom:1px solid var(--line)}
+  footer .w{grid-template-columns:1fr;gap:28px}.sec{padding:80px 0}.w{padding:0 20px}
+}
+@media (max-width:600px){.metrics,.finds{grid-template-columns:1fr}.metrics .kpi+.kpi,.find+.find{padding-left:0;border-left:0}.nav .act .out{display:none}.hero .w{padding-top:132px}}
+.frame.chat .cm{padding:22px 24px 24px;background:linear-gradient(160deg,#0B1530,#0A1124);font-size:14px;line-height:1.75;color:#D9E2F1;min-height:340px}
+.frame.chat .q{margin:0 0 12px auto;width:fit-content;max-width:80%;background:linear-gradient(135deg,#2E6BFF,#4E5BFF);color:#fff;padding:8px 14px;border-radius:14px 14px 4px 14px}
+.frame.chat .a{margin:0 0 16px;max-width:92%;color:#C9D5EA}
+.frame.chat code{background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;font-size:12.5px;color:#fff}
+.frame.chat .chips{display:flex;flex-wrap:wrap;gap:8px}
+.frame.chat .chips a{border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:4px 12px;font-size:12.5px;color:#D9E2F1;text-decoration:none;transition:all .2s}
+.frame.chat .chips a:hover{border-color:#6E9CF5;background:rgba(46,107,255,.18);color:#fff}
 </style>
 </head>
 <body>
-<div class="wrap">
-<header class="mast">
-  <div class="kicker reveal"><span><b>数据分析赛道</b> · 赛题：基于应用图谱信息的经营类客户风控模型的构建</span><span>{{DATE}}<button class="theme-btn" id="themeBtn" type="button">深 / 浅</button></span></div>
-  <h1 class="title reveal" style="animation-delay:.08s"><em>关联事件预警</em>与风险归因：一个关联图谱增强的经营类客户风控模型</h1>
-  <p class="sub reveal" style="animation-delay:.16s">以 A 股非金融上市公司 2016—2023 年的逐年异质关联网络为代理样本</p>
-  <p class="lede reveal" style="animation-delay:.24s">{{LEDE}}</p>
-  <div class="ctas reveal" style="animation-delay:.3s">
-    <a class="cta" href="app.html">打开产品原型：关联风险全景 →<span>全景视图 · 预警工作台 · 情景推演</span></a>
-    <a class="cta alt" href="graph/">打开全量关联图谱 →<span>2016—2023 · 搜索定位 · 二跳路径</span></a>
+<header class="nav" id="nav"><div class="w">
+  <a class="logo" href="./"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#fff" stroke-width="2"><line x1="9" y1="9" x2="23" y2="12"/><line x1="9" y1="9" x2="13" y2="24"/><line x1="23" y1="12" x2="13" y2="24"/></g><circle cx="9" cy="9" r="3.2" fill="#fff"/><circle cx="23" cy="12" r="3.2" fill="#fff"/><circle cx="13" cy="24" r="3.8" fill="#FFB020"/></svg>关联风险全景</a>
+  <nav class="menu"><a href="#findings">核心结论</a><a href="#product">产品</a><a href="#report">研究报告</a><a href="graph/">关联图谱</a></nav>
+  <div class="act"><a class="btn out sm" href="{{PDF_URL}}">下载报告</a><a class="btn pri sm" href="app.html">进入产品 <span class="ar">→</span></a></div>
+</div></header>
+
+<div class="progress" id="progress"></div>
+<section class="hero">
+  <div class="glow"></div><div class="fade"></div><div class="net" role="img" aria-label="2023 年全量关联网络：67,585 个主体，琥珀色为出险主体，红色为违约企业"></div><div class="grid"></div>
+  <div class="w">
+    <div class="tagline rv"><b>研究报告</b>经营类客户关联图谱风控模型 · {{DATE}}</div>
+    <h1 class="rv" style="animation-delay:.08s">关联方一出事，<br><em>风险先到</em>一步。</h1>
+    <p class="sub rv" style="animation-delay:.16s">在 6.8 万个主体、7.2 万条关系的逐年关联网络上，捕捉股东、担保方与上下游的风险事件，提前 4 到 5 个月预警，并说清风险从哪条关系传来。</p>
+    <div class="ctas rv" style="animation-delay:.24s"><a class="btn pri" href="app.html">进入产品原型 <span class="ar">→</span></a><a class="btn out" href="graph/">浏览全量关联图谱</a></div>
+    <div class="metrics rv" style="animation-delay:.32s">{{KPIS}}</div>
   </div>
-  <div class="kpis">{{KPIS}}</div>
-</header>
-<div class="layout">
-  <nav class="toc" id="toc"><div class="h">目录</div>{{TOC}}</nav>
-  <main id="main">{{CONTENT}}</main>
-</div>
-<footer>{{FOOTER}}</footer>
-</div>
+</section>
+
+<section class="src"><div class="w"><h4>数据底座</h4><ul><li>CNRDS 诉讼与关联交易</li><li>CSMAR 供应链</li><li>上海票据交易所</li><li>巨潮资讯</li><li>中国结算股权质押</li><li>沪深北交易所</li><li>全国工商登记</li></ul></div></section>
+
+<section class="sec white-fade" id="findings"><div class="w">
+  <p class="kicker" data-rv>核心结论</p>
+  <h2 class="h2" data-rv>关联图谱的价值在贷中：预警、分级与归因</h2>
+  <p class="intro" data-rv>{{LEDE}}</p>
+  <div class="finds" data-rv>{{FINDINGS}}</div>
+</div></section>
+
+<section class="sec prod" id="product"><div class="w">
+  <p class="kicker" data-rv>产品</p>
+  <h2 class="h2" data-rv>从一条诉讼公告，到一份复核清单</h2>
+  <p class="intro" data-rv>每天拉取关联方的新增诉讼、执行、失信、票据逾期与股份冻结事件，月末重新评分，<b>按触发渠道分级推送给客户经理</b>，并在全景视图里回放风险的来路。</p>
+  <div class="feat" data-rv><div class="txt"><div class="lab">预警工作台</div><h3>每月 205 家名单，优先复核的不到 3 家</h3>
+    <p>动态评分前 5% 进入名单；客户或担保连带方被诉、关联方被执行或失信的，直接列为优先复核，历史命中率 15.9%。</p>
+    <ul><li>按复核等级、触发渠道、行业与年份筛选</li><li>每条预警附主要驱动与近 3 个月关联事件</li><li>一键跳转该客户的全景视图</li></ul>
+    <a class="go" href="app.html?v=alert">打开预警工作台 →</a></div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span>关联风险全景 / 预警工作台</span></div><img src="assets/shot_alert.jpg" alt="预警工作台界面" loading="lazy"></div></div>
+  <div class="feat rev" data-rv><div class="txt"><div class="lab">客户全景视图</div><h3>按月回放风险在关联网络中的出现</h3>
+    <p>以客户为中心展开股权、担保、交易与二跳关系；风险分曲线与 SHAP 归因同屏，看清每一次升级由哪条关系触发。</p>
+    <ul><li>月度风险分：动态模型对照仅自身特征模型</li><li>关联事件泳道与多层级网络联动回放</li><li>情景推演：叠加假设事件，给出建议动作</li></ul>
+    <a class="go" href="app.html">打开全景视图 →</a></div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span>关联风险全景 / 全景视图</span></div><img src="assets/shot_pano.jpg" alt="客户全景视图界面" loading="lazy"></div></div>
+  <div class="feat" data-rv><div class="txt"><div class="lab">全量关联图谱</div><h3>2016—2023 年，每个主体都可搜索、可追溯</h3>
+    <p>逐年建模图谱实名开放：按名称或代码定位任一主体，查看关联方、二跳传导路径、公告风险事件、历年股权质押与工商登记。</p>
+    <ul><li>6.8 万主体，WebGL 实时渲染</li><li>按风险状态、主体类型、关系类型过滤</li><li>票交所承兑人名单与债券违约公告同屏标注</li></ul>
+    <a class="go" href="graph/">打开关联图谱 →</a></div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span>关联风险全景 / 全量关联图谱</span></div><img src="assets/shot_graph.jpg" alt="全量关联图谱界面" loading="lazy"></div></div>
+  <div class="feat rev" data-rv><div class="txt"><div class="lab">AI 风控助手</div><h3>直接问：这家企业怎么样，这个指标怎么算</h3>
+    <p>右下角的助手接入 Cloudflare Workers AI，在 1.6 万个主体的风险画像与方法文档中检索后作答，回答附参考来源。</p>
+    <ul><li><span><b>企业风险情况</b>：输入全称、简称或股票代码，返回出险与违约记录、违约概率、公告事件、质押与有风险的关联方</span></li><li><span><b>监测方法</b>：预警名单、分级复核与风险归因怎么做</span></li><li><span><b>测度口径与公式原理</b>：违约标签、时间衰减、多跳传导、事件乘数、SHAP</span></li><li><span><b>报告内容</b>：数据来源、核心结论与产品用法</span></li></ul>
+    <a class="go" href="#" data-ask="">打开 AI 风控助手 →</a></div>
+    <div class="frame chat"><div class="bar"><i></i><i></i><i></i><span>关联风险全景 / AI 风控助手</span></div>
+      <div class="cm"><div class="q">事件乘数怎么计算？</div>
+      <div class="a">事件乘数衡量关联事件让违约几率放大多少倍。以自身模型的样本外违约概率 p_self 为偏移项估计：<code>logit P(y=1) = logit(p_self) + α_年份 + β·x</code>，事件乘数 = exp(β)。</div>
+      <div class="q">海航控股的风险情况</div>
+      <div class="a">海航控股的样本外违约概率 2020—2022 年都在前 5% 分位（2022 年 <b>11.74%</b>），2023 年观察期内违约；2023 年图谱中 121 个关联方有 18 个出险，可逐一回溯到具体关系……</div>
+      <div class="chips"><a href="#" data-ask="什么算“出险”？">什么算“出险”？</a><a href="#" data-ask="多跳传导公式是什么？">多跳传导公式</a><a href="#" data-ask="预警名单怎么分级？">预警怎么分级</a></div></div></div></div>
+</div></section>
+
+<section class="sec rep" id="report"><div class="w">
+  <div class="head" data-rv><div><p class="kicker">研究报告</p><h2 class="h2" style="margin:0">基于应用图谱信息的经营类客户风控模型构建</h2></div><a class="btn dark" href="{{PDF_URL}}">下载 PDF <span class="ar">↓</span></a></div>
+  <div class="body">
+    <nav class="toc" id="toc"><div class="h">目录</div>{{TOC}}</nav>
+    <main id="main">{{CONTENT}}</main>
+  </div>
+</div></section>
+
+<section class="end"><div class="w" data-rv>
+  <div><h3>把关联图谱接进贷中监控</h3><p>预警工作台、客户全景视图与情景推演，直接在浏览器中操作。</p></div>
+  <a class="btn" href="app.html">进入产品原型 <span class="ar">→</span></a>
+</div></section>
+
+<footer>
+  <div class="w">
+    <div><div class="fb"><svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#fff" stroke-width="2"><line x1="9" y1="9" x2="23" y2="12"/><line x1="9" y1="9" x2="13" y2="24"/><line x1="23" y1="12" x2="13" y2="24"/></g><circle cx="9" cy="9" r="3.2" fill="#fff"/><circle cx="23" cy="12" r="3.2" fill="#fff"/><circle cx="13" cy="24" r="3.8" fill="#FFB020"/></svg>关联风险全景</div>经营类客户关联图谱风控模型：关联事件预警、预警分级与风险归因。</div>
+    <div><h5>产品与资料</h5><a href="app.html">产品原型</a><a href="graph/">全量关联图谱</a><a href="{{PDF_URL}}">PDF 报告</a><a href="https://github.com/gaaiyun/graph-credit-risk">代码仓库</a></div>
+    <div><h5>数据来源</h5>{{FOOTER}}</div>
+  </div>
+  <div class="copy"><div class="w">© 2026 关联风险全景 · 更新于 {{DATE}}</div></div>
+</footer>
 <script>
 const DATA = {{DATA_JSON}};
-(function theme(){
-  const root=document.documentElement,btn=document.getElementById('themeBtn');
-  let saved=null;try{saved=localStorage.getItem('theme')}catch(e){}
-  if(saved)root.setAttribute('data-theme',saved);
-  btn.addEventListener('click',()=>{
-    const dark=root.getAttribute('data-theme')==='dark'||(!root.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);
-    const next=dark?'light':'dark';root.setAttribute('data-theme',next);try{localStorage.setItem('theme',next)}catch(e){}
-  });
-})();
+const nav = document.getElementById('nav');
+const onScroll = () => nav.classList.toggle('solid', scrollY > 40);
+addEventListener('scroll', onScroll, {passive: true}); onScroll();
 function el(tag,attrs,parent){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
 function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
-// 传导强度森林图（对数刻度）
-function forest(id,rows){
-  const box=document.getElementById(id);if(!box)return;box.innerHTML='';
-  const W=720,rowH=30,top=16,left=190,right=110,H=top+rows.length*rowH+36;
-  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'分关系类型的风险传导优势比'},box);
-  const lo=Math.log(0.3),hi=Math.log(4),x=v=>left+(Math.log(v)-lo)/(hi-lo)*(W-left-right);
-  [0.5,1,2,3].forEach(t=>{el('line',{x1:x(t),x2:x(t),y1:top-6,y2:H-30,stroke:t===1?css('--muted'):css('--rule'),'stroke-dasharray':t===1?'4 3':'0'},svg);
-    const tx=el('text',{x:x(t),y:H-12,'text-anchor':'middle','font-size':12},svg);tx.textContent=t});
-  rows.forEach((r,i)=>{const y=top+i*rowH+rowH/2;const sig=r.lo>1,neg=r.hi<1;const c=sig?css('--accent'):(neg?css('--blue'):css('--muted'));
-    const lab=el('text',{x:left-12,y:y+4,'text-anchor':'end','font-size':13},svg);lab.textContent=r.name;
-    el('line',{x1:x(Math.max(r.lo,0.3)),x2:x(Math.min(r.hi,4)),y1:y,y2:y,stroke:c,'stroke-width':2.4,'stroke-linecap':'round'},svg);
-    el('circle',{cx:x(r.or),cy:y,r:5,fill:c},svg);
-    const v=el('text',{x:W-right+10,y:y+4,'font-size':12.5,'font-family':'IBM Plex Mono'},svg);v.textContent=r.or.toFixed(2)+(r.p<0.01?'***':r.p<0.05?'**':r.p<0.1?'*':'');v.style.fill=sig?css('--accent'):css('--ink-2')});
-}
-// 消融增量点估计+区间
-function deltas(id,rows){
-  const box=document.getElementById(id);if(!box)return;box.innerHTML='';
-  const W=720,rowH=32,top=16,left=250,right=90,H=top+rows.length*rowH+36;
-  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'相对基线的AUC增量'},box);
-  const mn=Math.min(-0.02,...rows.map(r=>r.lo)),mx=Math.max(0.03,...rows.map(r=>r.hi));
-  const x=v=>left+(v-mn)/(mx-mn)*(W-left-right);
-  [-0.02,-0.01,0,0.01,0.02,0.03].filter(t=>t>=mn&&t<=mx).forEach(t=>{el('line',{x1:x(t),x2:x(t),y1:top-6,y2:H-30,stroke:t===0?css('--muted'):css('--rule'),'stroke-dasharray':t===0?'4 3':'0'},svg);
-    const tx=el('text',{x:x(t),y:H-12,'text-anchor':'middle','font-size':12},svg);tx.textContent=(t>0?'+':'')+t.toFixed(2)});
-  rows.forEach((r,i)=>{const y=top+i*rowH+rowH/2;const c=r.lo>0?css('--accent'):css('--muted');
-    const lab=el('text',{x:left-12,y:y+4,'text-anchor':'end','font-size':12.5},svg);lab.textContent=r.name;
-    el('line',{x1:x(r.lo),x2:x(r.hi),y1:y,y2:y,stroke:c,'stroke-width':2.4,'stroke-linecap':'round'},svg);
-    el('circle',{cx:x(r.d),cy:y,r:5,fill:c},svg);
-    const v=el('text',{x:W-right+10,y:y+4,'font-size':12.5,'font-family':'IBM Plex Mono'},svg);v.textContent=(r.d>0?'+':'')+r.d.toFixed(4);v.style.fill=c});
-}
-// 案例关联网络
 function explorer(){
   const cases=DATA.cases||[];const tabs=document.getElementById('exTabs'),g=document.getElementById('exGraph'),side=document.getElementById('exSide');
   if(!tabs||!cases.length)return;
@@ -173,8 +315,7 @@ function explorer(){
   function info(c,n){
     const k=n.n_events||0;
     side.innerHTML=`<h4>${n.id}</h4><div class="meta">${n.ring===0?'目标企业':(n.ring===1?'一跳关联：'+(n.rels||[]).join('、'):'二跳关联（经 '+(n.via||'')+'，关系：'+(n.rels||[]).join('、')+'）')}</div>`+
-      (k?`<p style="margin:8px 0 2px">决策日前 36 个月内作为被告卷入金融债务或经营性欠款诉讼 <b style="color:var(--accent)">${k}</b> 次。</p>`:`<p class="note">决策日前 36 个月内无金融债务或经营性欠款被诉记录。</p>`)+
-      `<p class="note" style="margin-top:14px">点击其他节点查看；橙色节点为有风险事件的关联方。</p>`;
+      (k?`<p style="margin:12px 0 2px">决策日前 36 个月内作为被告卷入金融债务或经营性欠款诉讼 <b style="color:var(--warn)">${k}</b> 次。</p>`:`<p class="note">决策日前 36 个月内无金融债务或经营性欠款被诉记录。</p>`);
   }
   function show(i){
     [...tabs.children].forEach((b,j)=>b.classList.toggle('on',i===j));
@@ -190,8 +331,8 @@ function explorer(){
     c.edges.forEach(e=>{const a=pos[e.s],b=pos[e.t];if(!a||!b)return;const ge=el('g',{class:'edge'},svg);
       el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1]},ge);const t=el('text',{x:a[0]+(b[0]-a[0])*0.55,y:a[1]+(b[1]-a[1])*0.55-3,'text-anchor':'middle'},ge);t.textContent=e.rel});
     c.nodes.forEach(n=>{const [x,y]=pos[n.id];const gn=el('g',{class:'node',tabindex:0},svg);
-      const col=n.ring===0?css('--ink'):(n.risk>0?css('--accent'):css('--muted'));const r=n.ring===0?11:6+Math.min(n.risk,3)*1.6;
-      const sh=n.listed?el('rect',{x:x-r,y:y-r,width:2*r,height:2*r,fill:col,rx:2,style:`transform-origin:${x}px ${y}px`},gn):el('circle',{cx:x,cy:y,r:r,fill:col,style:`transform-origin:${x}px ${y}px`},gn);
+      const col=n.ring===0?css('--navy'):(n.risk>0?css('--warn'):css('--node'));const r=n.ring===0?11:6+Math.min(n.risk,3)*1.6;
+      n.listed?el('rect',{x:x-r,y:y-r,width:2*r,height:2*r,fill:col,style:`transform-origin:${x}px ${y}px`},gn):el('circle',{cx:x,cy:y,r:r,fill:col,style:`transform-origin:${x}px ${y}px`},gn);
       let t;
       if(n.ring===0){t=el('text',{x:x,y:y+r+14,'text-anchor':'middle','font-weight':700},gn);}
       else{const a=Math.atan2(y-cy,x-cx);t=el('text',{x:x+(r+5)*Math.cos(a),y:y+(r+5)*Math.sin(a)+4,'text-anchor':Math.cos(a)>=0?'start':'end'},gn);}
@@ -199,18 +340,40 @@ function explorer(){
       gn.addEventListener('click',()=>info(c,n));gn.addEventListener('keydown',ev=>{if(ev.key==='Enter')info(c,n)})});
     side.innerHTML=`<h4>${c.title}</h4><div class="meta">决策日 ${c.decision} ｜ 首次被提起金融债务诉讼 ${c.event.date}（${c.event.case}）</div>
       <div class="rank"><div><div class="v">${(c.pct_m1*100).toFixed(1)}</div><div class="l">仅用自身特征的风险分位</div></div>
-      <div><div class="v" style="color:var(--accent)">${(c.pct_m4*100).toFixed(1)}</div><div class="l">加入关联图谱后的风险分位</div></div></div>
-      <p class="note">分位越高风险越高（同年样本内排序）。点击网络中的节点查看该关联方在决策日之前的被诉记录。</p>`;
+      <div><div class="v" style="color:var(--blue)">${(c.pct_m4*100).toFixed(1)}</div><div class="l">加入关联图谱后的风险分位</div></div></div>
+      <p class="note">分位为同年样本内排序，越高风险越高。点击节点查看关联方在决策日之前的被诉记录。</p>`;
   }
   show(0);
 }
-function draw(){forest('forestChart',DATA.forest||[]);deltas('deltaChart',DATA.deltas||[]);}
-draw();explorer();
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
-new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
-// 目录高亮
+explorer();
+// 滚动显现
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold: .14, rootMargin: '0px 0px -40px 0px'});
+document.querySelectorAll('[data-rv]').forEach(n => io.observe(n));
+// 数字滚动
+function countUp(node){
+  const raw = node.dataset.v; const m = raw.match(/^([\d,.]+)/); if (!m) return;
+  const target = parseFloat(m[1].replace(/,/g, '')), dec = (m[1].split('.')[1] || '').length, comma = m[1].includes(','), rest = raw.slice(m[1].length);
+  const t0 = performance.now(), dur = 1600;
+  const step = now => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 4), v = target * e;
+    let s = v.toFixed(dec); if (comma) s = Number(s).toLocaleString('en-US', {minimumFractionDigits: dec, maximumFractionDigits: dec});
+    node.innerHTML = s + rest; if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+document.querySelectorAll('.metrics .v').forEach(v => { v.dataset.v = v.innerHTML; v.innerHTML = '0' + v.innerHTML.replace(/^[\d,.]+/, ''); setTimeout(() => countUp(v), 450); });
+// 首屏视差
+const net = document.querySelector('.hero .net');
+if (net && matchMedia('(pointer:fine)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches) {
+  document.querySelector('.hero').addEventListener('mousemove', e => { const r = e.currentTarget.getBoundingClientRect();
+    const dx = (e.clientX - r.left) / r.width - .5, dy = (e.clientY - r.top) / r.height - .5;
+    net.style.transform = `translate3d(${dx * -22}px, ${dy * -16}px, 0) scale(1.03)`; });
+}
+// 阅读进度
+const prog = document.getElementById('progress'), rep = document.getElementById('report');
+addEventListener('scroll', () => { const r = rep.getBoundingClientRect(), h = r.height - innerHeight;
+  prog.style.width = (r.top < 0 && h > 0 ? Math.min(1, -r.top / h) * 100 : 0) + '%'; }, {passive: true});
 const links=[...document.querySelectorAll('nav.toc a')];const secs=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
-addEventListener('scroll',()=>{let k=0;secs.forEach((s,i)=>{if(s.getBoundingClientRect().top<120)k=i});links.forEach((a,i)=>a.classList.toggle('on',i===k))},{passive:true});
+addEventListener('scroll',()=>{let k=0;secs.forEach((s,i)=>{if(s.getBoundingClientRect().top<140)k=i});links.forEach((a,i)=>a.classList.toggle('on',i===k))},{passive:true});
 </script>
+<script src="assets/assistant.js" defer></script>
 </body>
 </html>

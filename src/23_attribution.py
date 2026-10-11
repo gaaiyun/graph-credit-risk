@@ -15,9 +15,6 @@ import matplotlib.pyplot as plt
 from common import *
 from statsmodels.stats.proportion import proportion_confint
 
-plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei"]
-plt.rcParams["axes.unicode_minus"] = False
-INK, MUTED, ACC, ACC2 = "#1f2933", "#7b8794", "#c2410c", "#2563eb"
 
 M19 = importlib.import_module("19_dynamic_model")
 M4 = importlib.import_module("04_model")
@@ -116,48 +113,4 @@ json.dump(res, open(OUT / "attribution.json", "w", encoding="utf-8"), ensure_asc
 comp.to_csv(OUT / "attribution_groups.csv", encoding="utf-8-sig")
 chan.to_csv(OUT / "attribution_channels.csv", index=False, encoding="utf-8-sig")
 
-# ---------------- 图：左 风险来源构成；右 触发渠道的 6 个月违约率
-fig, axes = plt.subplots(1, 2, figsize=(7.4, 3.2), dpi=200, gridspec_kw={"width_ratios": [1, 1.15]})
-ax = axes[0]
-cols = {"自身财务": "#9aa5b1", "自身事件与治理": "#cbd2d9", "静态图谱结构": "#f5a97f", "一跳关联事件时序": ACC, "多层级时序": "#7c2d12"}
-cats = list(comp.columns)
-left = np.zeros(len(cats))
-for g in comp.index:
-    v = comp.loc[g].values
-    ax.barh(range(len(cats))[::-1], v * 100, left=left * 100, color=cols[g], height=0.55, label=g)
-    for i, (l_, w_) in enumerate(zip(left, v)):
-        if w_ > 0.07:
-            ax.text((l_ + w_ / 2) * 100, len(cats) - 1 - i, f"{w_ * 100:.0f}", ha="center", va="center", fontsize=6.5,
-                    color="white" if g in ("一跳关联事件时序", "多层级时序") else INK)
-    left = left + v
-ax.set_yticks(range(len(cats))[::-1])
-ax.set_yticklabels([f"{c}（{n}）" for c, n in zip(cats, [len(first), int(first.out.sum()), int((first.out == 0).sum())])], fontsize=7)
-ax.set_xlim(0, 100)
-ax.set_xlabel("正向 SHAP 贡献的平均构成（%）", fontsize=7, color=MUTED)
-ax.legend(fontsize=6, frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.22))
-ax.set_title("预警名单的风险来源构成", fontsize=8, color=INK, loc="left")
-for s in ["top", "right"]:
-    ax.spines[s].set_visible(False)
-ax.tick_params(labelsize=7, colors=MUTED)
-ax = axes[1]
-ch = chan.iloc[::-1]
-y = np.arange(len(ch))
-base = first.out.mean()
-cc = [MUTED if c == "无关联触发" else ACC for c in ch.渠道]
-ax.barh(y, ch["6个月违约率"] * 100, color=cc, height=0.6, alpha=0.9)
-ax.hlines(y, ch.CI_lo * 100, ch.CI_hi * 100, color=INK, lw=0.8)
-for yy, r in zip(y, ch.itertuples()):
-    ax.text(r.CI_hi * 100 + 0.6, yy, f"{r[3] * 100:.1f}%（n={r[2]}）", va="center", fontsize=6.3, color=INK)
-ax.axvline(base * 100, color=MUTED, lw=0.8, ls="--")
-ax.text(base * 100, len(ch) - 0.4, f" 全部预警 {base:.1%}", fontsize=6.5, color=MUTED)
-ax.set_yticks(y)
-ax.set_yticklabels(ch.渠道, fontsize=7)
-ax.set_xlabel("预警后 6 个月内违约率（%，横线为 Wilson 95% 区间）", fontsize=7, color=MUTED)
-ax.set_title("按触发渠道：预警的命中率", fontsize=8, color=INK, loc="left")
-ax.set_xlim(0, max(ch.CI_hi) * 100 * 1.35)
-for s in ["top", "right"]:
-    ax.spines[s].set_visible(False)
-ax.tick_params(labelsize=7, colors=MUTED)
-fig.tight_layout()
-fig.savefig(OUT / "fig" / "fig9_attribution.png", bbox_inches="tight", pad_inches=0.05)
-print("fig saved")
+# 图（fig9_attribution）由 23b_attribution_fig.py 从上面保存的结果绘制

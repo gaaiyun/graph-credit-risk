@@ -5,164 +5,177 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>关联风险全景</title>
 <meta name="description" content="经营类客户关联图谱风控产品原型：关联风险全景视图、预警工作台与情景推演">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%231c1f23%22/%3E%3Cpath d=%22M9 22L16 10L23 22%22 stroke=%22%23f0773a%22 stroke-width=%222.4%22 fill=%22none%22/%3E%3Ccircle cx=%2216%22 cy=%2210%22 r=%223%22 fill=%22%23f0773a%22/%3E%3Ccircle cx=%229%22 cy=%2222%22 r=%222.6%22 fill=%22%23ebe6dc%22/%3E%3Ccircle cx=%2223%22 cy=%2222%22 r=%222.6%22 fill=%22%23ebe6dc%22/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B1730'/%3E%3Cg stroke='%23fff' stroke-width='2'%3E%3Cline x1='9' y1='9' x2='23' y2='12'/%3E%3Cline x1='9' y1='9' x2='13' y2='24'/%3E%3Cline x1='23' y1='12' x2='13' y2='24'/%3E%3C/g%3E%3Ccircle cx='9' cy='9' r='3' fill='%23fff'/%3E%3Ccircle cx='23' cy='12' r='3' fill='%23fff'/%3E%3Ccircle cx='13' cy='24' r='3.6' fill='%23FFB020'/%3E%3C/svg%3E">
 <style>
 :root{
-  --paper:#f6f3ec;--paper-2:#eee8dc;--card:#fbf9f4;--ink:#1c1f23;--ink-2:#454b54;--muted:#7b8794;--rule:#d8d1c3;--rule-2:#e7e1d5;
-  --accent:#c2410c;--accent-2:#ea8a55;--accent-soft:#f3dccd;--blue:#2563eb;--blue-soft:#dbe6fb;--green:#15803d;--amber:#b45309;
-  --r1:#c2410c;--r2:#7c3aed;--r3:#0f766e;--r4:#b45309;--r5:#2563eb;
-  --shadow:0 1px 0 rgba(28,31,35,.04),0 10px 30px -18px rgba(28,31,35,.3);
-  --serif:"Noto Serif SC","Songti SC","SimSun",serif;--sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+  --navy:#0B1730;--brand:#1D5BD8;--brand-2:#1546B0;--brand-soft:#EEF3FC;
+  --paper:#FFFFFF;--paper-2:#F5F7FA;--card:#FFFFFF;--ink:#141B2D;--ink-2:#4B5568;--muted:#8A94A7;--rule:#E3E7EE;--rule-2:#EEF1F5;
+  --accent:#E5372B;--accent-2:#F07067;--accent-soft:#FDECEA;--blue:#1D5BD8;--blue-soft:#EEF3FC;--green:#12B76A;--amber:#E08A00;
+  --r1:#1D5BD8;--r2:#6E56CF;--r3:#0E9F8E;--r4:#F28C28;--r5:#8A94A7;
+  --shadow:0 8px 24px rgba(15,23,42,.12);
+  --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  --mono:"DIN Alternate","DIN Pro",Bahnschrift,"Helvetica Neue",Arial,sans-serif;--serif:var(--sans);
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#131518;--paper-2:#1a1d21;--card:#181b1f;--ink:#ebe6dc;--ink-2:#bdb7ab;--muted:#8b919a;--rule:#2c3036;--rule-2:#23272c;
-  --accent:#f0773a;--accent-2:#f5a877;--accent-soft:#3a2418;--blue:#6ea0ff;--blue-soft:#1b2a45;--green:#4ade80;--amber:#f5b041;
-  --r1:#f0773a;--r2:#b794f6;--r3:#2dd4bf;--r4:#f5b041;--r5:#6ea0ff;--shadow:0 10px 30px -18px rgba(0,0,0,.7);}}
-:root[data-theme="dark"]{
-  --paper:#131518;--paper-2:#1a1d21;--card:#181b1f;--ink:#ebe6dc;--ink-2:#bdb7ab;--muted:#8b919a;--rule:#2c3036;--rule-2:#23272c;
-  --accent:#f0773a;--accent-2:#f5a877;--accent-soft:#3a2418;--blue:#6ea0ff;--blue-soft:#1b2a45;--green:#4ade80;--amber:#f5b041;
-  --r1:#f0773a;--r2:#b794f6;--r3:#2dd4bf;--r4:#f5b041;--r5:#6ea0ff;--shadow:0 10px 30px -18px rgba(0,0,0,.7);}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:14.5px;line-height:1.6;-webkit-font-smoothing:antialiased;
-  background-image:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--ink) 5%,transparent) 1px,transparent 0);background-size:22px 22px}
+body{background:var(--paper);color:var(--ink);font:14px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
 button,input,select{font:inherit;color:inherit}
-a{color:var(--accent);text-underline-offset:3px}
-.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
-.top .in{max-width:1320px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
-.brand b{font-family:var(--serif);font-weight:900;font-size:19px;letter-spacing:.01em}
-.brand span{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted)}
-.tabs{display:flex;gap:2px;background:var(--paper-2);border:1px solid var(--rule);border-radius:999px;padding:3px}
-.tabs button{border:0;background:none;padding:5px 14px;border-radius:999px;cursor:pointer;color:var(--ink-2);font-size:13.5px}
-.tabs button.on{background:var(--ink);color:var(--paper)}
-.tools{display:flex;gap:8px;align-items:center}
-.pill{border:1px solid var(--rule);background:none;border-radius:999px;padding:4px 11px;font-family:var(--mono);font-size:11px;color:var(--ink-2);cursor:pointer;text-decoration:none}
-.wrap{max-width:1320px;margin:0 auto;padding:18px 16px 60px}
-.view{display:none}.view.on{display:block;animation:fade .35s ease}
-@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.card{background:var(--card);border:1px solid var(--rule);border-radius:10px;box-shadow:var(--shadow)}
+a{color:var(--brand);text-decoration:none}
+.shell{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:100vh}
+/* 侧栏 */
+.side-nav{background:var(--navy);color:#C5CEE0;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+.side-nav .logo{display:flex;align-items:center;gap:10px;height:60px;padding:0 20px;color:#fff;font-weight:800;font-size:16px;border-bottom:1px solid rgba(255,255,255,.08);letter-spacing:.02em}
+.side-nav .grp{font-size:12px;color:#5E6B85;padding:20px 20px 8px}
+.tabs{display:flex;flex-direction:column}
+.tabs button{display:flex;align-items:center;gap:12px;border:0;background:none;color:#B4BFD4;text-align:left;padding:11px 20px;cursor:pointer;font-size:14px;border-left:3px solid transparent}
+.tabs button svg{flex:none;opacity:.8}
+.tabs button:hover{color:#fff;background:rgba(255,255,255,.04)}
+.tabs button.on{color:#fff;background:rgba(29,91,216,.22);border-left-color:#4C82F0;font-weight:700}
+.side-nav .ext{margin-top:auto;padding:14px 20px 20px;border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:6px}
+.side-nav .ext a{color:#8D9AB5;font-size:13px}
+.side-nav .ext a:hover{color:#fff}
+/* 顶栏 */
+.bar{position:sticky;top:0;z-index:20;height:60px;background:#fff;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:16px;padding:0 28px}
+.crumb{font-size:14px;color:var(--muted)}
+.crumb b{color:var(--ink);font-weight:700}
+.bar .meta{margin-left:auto;display:flex;align-items:center;gap:18px;font-size:12.5px;color:var(--muted)}
+.bar .meta i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:6px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
+.wrap{padding:24px 28px 56px}
+.view{display:none}.view.on{display:block}
+.card{background:#fff;border:1px solid var(--rule)}
 .muted{color:var(--muted)}
 .mono{font-family:var(--mono)}
-h2.sec{font-family:var(--serif);font-weight:900;font-size:22px;margin:0 0 4px}
-p.lead{color:var(--ink-2);margin:0 0 14px;max-width:62em}
+h2.sec{font-size:20px;font-weight:800;margin:0 0 6px}
+p.lead{color:var(--ink-2);margin:0 0 18px;max-width:70em;font-size:13.5px}
 /* 全景视图 */
-.pano{display:grid;grid-template-columns:290px minmax(0,1fr);gap:16px;align-items:start}
-.side{position:sticky;top:70px;padding:12px;max-height:calc(100vh - 90px);display:flex;flex-direction:column}
+.pano{display:grid;grid-template-columns:280px minmax(0,1fr);border:1px solid var(--rule)}
+.side{border-right:1px solid var(--rule);padding:14px;position:sticky;top:60px;max-height:calc(100vh - 60px);display:flex;flex-direction:column;background:#FBFCFD}
 .side .flt{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.chip{border:1px solid var(--rule);background:var(--paper);border-radius:999px;padding:2px 10px;font-size:12.5px;cursor:pointer;color:var(--ink-2)}
-.chip.on{border-color:var(--ink);background:var(--ink);color:var(--paper)}
-.side input[type=search]{width:100%;border:1px solid var(--rule);background:var(--paper);border-radius:8px;padding:6px 10px;margin-bottom:10px}
-.flist{overflow:auto;margin:0 -6px;padding:0 6px}
-.fi{display:grid;grid-template-columns:1fr 64px;gap:4px 8px;padding:8px 8px;border-radius:8px;cursor:pointer;border:1px solid transparent}
-.fi:hover{background:var(--paper-2)}
-.fi.on{background:var(--paper-2);border-color:var(--rule)}
+.chip{border:1px solid var(--rule);background:#fff;border-radius:2px;padding:2px 9px;font-size:12.5px;cursor:pointer;color:var(--ink-2)}
+.chip.on{border-color:var(--brand);background:var(--brand);color:#fff}
+.side input[type=search]{width:100%;height:34px;border:1px solid var(--rule);background:#fff;border-radius:2px;padding:0 10px;margin-bottom:10px;outline:none}
+.side input[type=search]:focus{border-color:var(--brand)}
+.flist{overflow:auto;margin:0 -14px;border-top:1px solid var(--rule)}
+.fi{display:grid;grid-template-columns:1fr 64px;gap:2px 8px;padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--rule-2);border-left:3px solid transparent}
+.fi:hover{background:#F2F5FA}
+.fi.on{background:var(--brand-soft);border-left-color:var(--brand)}
 .fi .nm{font-weight:700;font-size:13.5px}
 .fi .sub{grid-column:1/2;font-size:12px;color:var(--muted)}
 .fi svg{grid-row:1/3;grid-column:2}
-.tag{display:inline-block;font-size:11px;border-radius:4px;padding:0 6px;margin-left:6px;font-weight:500;vertical-align:1px}
+.tag{display:inline-block;font-size:11px;border-radius:2px;padding:0 5px;margin-left:6px;font-weight:600;vertical-align:1px;line-height:18px}
 .tag.def{background:var(--accent-soft);color:var(--accent)}
-.tag.fp{background:var(--blue-soft);color:var(--blue)}
+.tag.fp{background:var(--blue-soft);color:var(--brand)}
 .tag.ok{background:var(--paper-2);color:var(--muted)}
-.tag.miss{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber)}
-.head{padding:14px 16px;display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;align-items:center}
-.head .t1{font-family:var(--serif);font-weight:900;font-size:21px;line-height:1.2}
-.head .t2{font-size:12.5px;color:var(--muted);margin-top:4px}
-.kv{border-left:1px solid var(--rule);padding-left:12px}
-.kv .v{font-family:var(--serif);font-weight:900;font-size:26px;line-height:1.1}
-.kv .l{font-size:11.5px;color:var(--muted);margin-top:2px}
-.band{display:inline-block;font-size:12px;font-weight:700;border-radius:6px;padding:2px 8px}
-.b0{background:var(--paper-2);color:var(--muted)}.b1{background:color-mix(in srgb,var(--amber) 16%,transparent);color:var(--amber)}
+.tag.miss{background:#FEF3E2;color:var(--amber)}
+.pmain{min-width:0}
+.head{padding:18px 22px;display:grid;grid-template-columns:minmax(0,1.4fr) repeat(4,minmax(0,1fr));gap:0;align-items:center;border-bottom:1px solid var(--rule)}
+.head .t1{font-size:22px;font-weight:800;line-height:1.2}
+.head .t2{font-size:12.5px;color:var(--muted);margin-top:6px}
+.kv{border-left:1px solid var(--rule);padding-left:18px}
+.kv .v{font:700 28px/1.1 var(--mono)}
+.kv .l{font-size:12px;color:var(--muted);margin-top:4px}
+.band{display:inline-block;font:700 13px/1 var(--sans);border-radius:2px;padding:5px 9px}
+.b0{background:var(--paper-2);color:var(--muted)}.b1{background:#FEF3E2;color:var(--amber)}
 .b2{background:var(--accent-soft);color:var(--accent)}.b3{background:var(--accent);color:#fff}
-.grid2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;margin-top:16px}
-.panel{padding:12px 14px}
-.panel h3{font-family:var(--serif);font-size:15.5px;margin:0 0 2px}
-.panel .hint{font-size:12px;color:var(--muted);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);border-top:1px solid var(--rule)}
+.grid2>.panel+.panel{border-left:1px solid var(--rule)}
+.panel{padding:16px 20px}
+.tl{border-bottom:0}
+.panel h3{font-size:15px;font-weight:800;margin:0 0 2px;display:flex;align-items:center;gap:8px}
+.panel h3::before{content:"";width:3px;height:14px;background:var(--brand)}
+.panel .hint{font-size:12px;color:var(--muted);margin-bottom:8px}
 .tl svg{width:100%;height:auto;display:block}
 .slider{display:flex;align-items:center;gap:10px;margin-top:4px}
-.slider input{flex:1;accent-color:var(--accent)}
-.slider .mono{font-size:12.5px;min-width:74px;text-align:right}
-.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--ink-2);margin-top:4px}
-.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:0}
+.slider input{flex:1;accent-color:var(--brand)}
+.slider .mono{font-size:13px;min-width:74px;text-align:right}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--ink-2);margin-top:6px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
 .net svg{width:100%;height:auto;display:block}
 .net .node{cursor:pointer}
 .net text{font-family:var(--sans)}
 @keyframes pulse{0%{r:7;opacity:.9}100%{r:17;opacity:0}}
 .pulse{animation:pulse 1.6s ease-out infinite}
-.tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--paper);font-size:12px;line-height:1.5;padding:7px 9px;border-radius:6px;max-width:280px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;transition:opacity .12s}
-.attr .row{display:grid;grid-template-columns:110px 1fr 56px;gap:8px;align-items:center;font-size:12.5px;margin:5px 0}
-.attr .bar{height:10px;background:var(--paper-2);border-radius:5px;position:relative;overflow:hidden}
-.attr .bar span{position:absolute;top:0;bottom:0;border-radius:5px}
+.tip{position:fixed;z-index:50;pointer-events:none;background:#141B2D;color:#fff;font-size:12px;line-height:1.55;padding:8px 10px;border-radius:2px;max-width:280px;box-shadow:var(--shadow);opacity:0;transition:opacity .12s}
+.attr .row{display:grid;grid-template-columns:110px 1fr 56px;gap:8px;align-items:center;font-size:12.5px;margin:6px 0}
+.attr .bar{height:10px;background:var(--paper-2);position:relative;overflow:hidden}
+.attr .bar span{position:absolute;top:0;bottom:0}
 .drivers{margin:10px 0 0;padding:0;list-style:none;font-size:12.5px}
-.drivers li{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px dashed var(--rule)}
-.drivers li b{font-family:var(--mono);font-weight:600}
-.story{margin-top:16px;padding:12px 16px;font-size:13.5px;color:var(--ink-2)}
+.drivers li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--rule-2)}
+.drivers li b{font-family:var(--mono);font-weight:700}
+.story{border-top:1px solid var(--rule);padding:14px 20px;font-size:13.5px;color:var(--ink-2);background:#FBFCFD}
 .story b{color:var(--ink)}
 /* 预警工作台 */
-.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:14px}
-.stat{padding:12px 14px}.stat .v{font-family:var(--serif);font-weight:900;font-size:26px}.stat .l{font-size:12px;color:var(--muted)}
-.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px;font-size:13px}
-.filters select{border:1px solid var(--rule);background:var(--card);border-radius:8px;padding:4px 8px}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--rule);margin-bottom:16px}
+.stat{padding:16px 18px;border:0}.stat+.stat{border-left:1px solid var(--rule)}
+.stat .v{font:700 28px/1.15 var(--mono)}.stat .l{font-size:12px;color:var(--muted);margin-top:4px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px;font-size:13px;color:var(--ink-2)}
+.filters select{height:32px;border:1px solid var(--rule);background:#fff;border-radius:2px;padding:0 8px}
 .tbl{overflow:auto;max-height:620px}
 table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
-th,td{padding:8px 10px;border-bottom:1px solid var(--rule-2);text-align:left;white-space:nowrap}
-th{position:sticky;top:0;background:var(--card);font-size:12px;color:var(--muted);font-weight:500;cursor:pointer;border-bottom:1px solid var(--rule)}
-tbody tr:hover{background:var(--paper-2)}
+th,td{padding:9px 12px;border-bottom:1px solid var(--rule-2);text-align:left;white-space:nowrap}
+th{position:sticky;top:0;background:#F5F7FA;font-size:12.5px;color:var(--ink-2);font-weight:700;cursor:pointer;border-bottom:1px solid var(--rule)}
+tbody tr:hover{background:#F7F9FC}
 td .yes{color:var(--accent);font-weight:700}td .no{color:var(--muted)}
-td a{color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.lv{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;line-height:1.6}
-.lv1{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);font-weight:700}
-.lv2{border:1px solid var(--rule);color:var(--muted)}
+td a{color:var(--brand);cursor:pointer}
+.lv{display:inline-block;padding:0 7px;border-radius:2px;font-size:12px;line-height:20px}
+.lv1{background:var(--accent);color:#fff;font-weight:700}
+.lv2{background:var(--paper-2);color:var(--ink-2)}
 /* 情景推演 */
-.sim{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,.9fr);gap:16px}
-.sim .panel label{display:flex;gap:10px;align-items:flex-start;padding:9px 6px;border-bottom:1px dashed var(--rule);cursor:pointer}
+.sim{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,.9fr);border:1px solid var(--rule)}
+.sim>.panel+.panel{border-left:1px solid var(--rule)}
+.sim .panel label{display:flex;gap:10px;align-items:flex-start;padding:10px 4px;border-bottom:1px solid var(--rule-2);cursor:pointer}
 .sim .panel label:last-child{border-bottom:0}
-.sim input[type=checkbox]{accent-color:var(--accent);margin-top:4px}
+.sim input[type=checkbox]{accent-color:var(--brand);margin-top:4px}
 .sim .ev b{display:block;font-size:13.5px}.sim .ev span{font-size:12px;color:var(--muted)}
-.sim .ev .m{font-family:var(--mono);font-size:12px;color:var(--accent)}
-.big{font-family:var(--serif);font-weight:900;font-size:54px;line-height:1}
-.gauge{height:12px;border-radius:6px;background:linear-gradient(90deg,var(--paper-2),color-mix(in srgb,var(--amber) 40%,transparent),var(--accent));position:relative;margin:14px 0 6px}
-.gauge i{position:absolute;top:-5px;width:3px;height:22px;background:var(--ink);border-radius:2px;transition:left .35s}
-.action{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:13px}
-.range{display:flex;gap:10px;align-items:center}.range input{flex:1;accent-color:var(--accent)}
+.sim .ev .m{font-family:var(--mono);font-size:12.5px;color:var(--brand);font-weight:700}
+.big{font:700 56px/1 var(--mono)}
+.gauge{height:10px;background:linear-gradient(90deg,#E7EDF6,#F6C46B,var(--accent));position:relative;margin:16px 0 6px}
+.gauge i{position:absolute;top:-6px;width:3px;height:22px;background:var(--ink);transition:left .35s}
+.action{margin-top:14px;padding:10px 12px;font-size:13px}
+.range{display:flex;gap:10px;align-items:center}.range input{flex:1;accent-color:var(--brand)}
 /* 证据 */
-.ev3{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.ev3{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--rule)}
+.ev3>.panel{border-bottom:1px solid var(--rule)}
+.ev3>.panel:nth-child(odd){border-right:1px solid var(--rule)}
+.ev3>.panel:nth-last-child(-n+2){border-bottom:0}
 .ev3 svg{width:100%;height:auto;display:block}
 .ev3 svg text{font-family:var(--sans);fill:var(--ink-2)}
-footer{max-width:1320px;margin:0 auto;padding:0 16px 40px;font-size:12px;color:var(--muted);line-height:1.8}
-@media (max-width:1100px){.head{grid-template-columns:repeat(2,minmax(0,1fr))}.head>div:first-child{grid-column:1/-1}.grid2{grid-template-columns:minmax(0,1fr)}.grid2>*{min-width:0}.sim{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stats .stat:last-child:nth-child(odd){grid-column:1/-1}}
-@media (max-width:820px){#tlChart,#netChart{overflow-x:auto}#tlChart svg{min-width:680px}#netChart svg{min-width:500px}.pano{grid-template-columns:minmax(0,1fr)}.pano>*{min-width:0}.side{position:static;max-height:none}.flist{max-height:260px}.ev3{grid-template-columns:1fr}.tabs button{padding:5px 10px}}
-@media (prefers-reduced-motion:reduce){.pulse{animation:none}.view.on{animation:none}}
+footer{padding:0 28px 28px;font-size:12px;color:var(--muted);line-height:1.8}
+@media (max-width:1180px){.head{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.head>div:first-child{grid-column:1/-1}.kv{border-left:0;padding-left:0}.grid2{grid-template-columns:minmax(0,1fr)}.grid2>.panel+.panel{border-left:0;border-top:1px solid var(--rule)}.sim{grid-template-columns:1fr}.sim>.panel+.panel{border-left:0;border-top:1px solid var(--rule)}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stat+.stat{border-left:0}.stat{border-bottom:1px solid var(--rule)}}
+@media (max-width:900px){.shell{grid-template-columns:1fr}.side-nav{position:static;height:auto}.side-nav .grp,.side-nav .ext{display:none}.tabs{flex-direction:row;overflow-x:auto}.tabs button{border-left:0;border-bottom:3px solid transparent;padding:10px 14px;white-space:nowrap}.tabs button.on{border-bottom-color:#4C82F0}
+  .bar{padding:0 16px}.bar .meta span{display:none}.wrap{padding:16px}#tlChart,#netChart{overflow-x:auto}#tlChart svg{min-width:680px}#netChart svg{min-width:500px}.pano{grid-template-columns:minmax(0,1fr)}.side{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--rule)}.flist{max-height:260px}.ev3{grid-template-columns:1fr}.ev3>.panel:nth-child(odd){border-right:0}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}}
 </style>
 </head>
 <body>
-<div class="top"><div class="in">
-  <div class="brand"><b>关联风险全景</b><span>经营类客户图谱风控 · 产品原型</span></div>
-  <div class="tabs" role="tablist">
-    <button class="on" data-v="pano" type="button">全景视图</button>
-    <button data-v="alert" type="button">预警工作台</button>
-    <button data-v="sim" type="button">情景推演</button>
-    <button data-v="evid" type="button">方法与证据</button>
-  </div>
-  <div class="tools"><a class="pill" href="./">← 分析报告</a><a class="pill" href="graph/">全量图谱 →</a><button class="pill" id="themeBtn" type="button">深 / 浅</button></div>
-</div></div>
-
+<div class="shell">
+<aside class="side-nav">
+  <div class="logo"><svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#fff" stroke-width="2"><line x1="9" y1="9" x2="23" y2="12"/><line x1="9" y1="9" x2="13" y2="24"/><line x1="23" y1="12" x2="13" y2="24"/></g><circle cx="9" cy="9" r="3.2" fill="#fff"/><circle cx="23" cy="12" r="3.2" fill="#fff"/><circle cx="13" cy="24" r="3.8" fill="#FFB020"/></svg>关联风险全景</div>
+  <div class="grp">风险监控</div>
+  <nav class="tabs" role="tablist">
+    <button class="on" data-v="pano" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="4" cy="6" r="2"/><circle cx="20" cy="6" r="2"/><circle cx="12" cy="21" r="2"/><path d="M6 7l4 3M18 7l-4 3M12 15v4"/></svg>全景视图</button>
+    <button data-v="alert" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg>预警工作台</button>
+    <button data-v="sim" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>情景推演</button>
+    <button data-v="evid" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg>方法与证据</button>
+  </nav>
+  <div class="ext"><a href="./">研究报告</a><a href="graph/">全量关联图谱</a></div>
+</aside>
+<div class="col">
+<header class="bar"><div class="crumb">风险监控 / <b id="crumb">全景视图</b></div><div class="meta"><span><i></i>样本外回测 2019—2023</span><span>月末评分</span><div class="avatar">风控</div></div></header>
 <div class="wrap">
 <!-- 全景视图 -->
 <section class="view on" id="v-pano">
   <div class="pano">
-    <aside class="card side">
+    <aside class="side">
       <div class="flt" id="fFlt"></div>
       <input type="search" id="fSearch" placeholder="搜索企业编号或行业">
       <div class="flist" id="fList"></div>
-      <div class="muted" style="font-size:11.5px;margin-top:8px">样本来自 2019—2023 年滚动外推测试期；编号已脱敏。</div>
+      <div class="muted" style="font-size:11.5px;margin-top:8px">样本：2019—2023 年滚动外推测试期</div>
     </aside>
-    <div>
-      <div class="card head" id="pHead"></div>
-      <div class="card panel tl" style="margin-top:16px">
+    <div class="pmain">
+      <div class="head" id="pHead"></div>
+      <div class="panel tl">
         <h3>月度风险分与关联事件时间轴</h3>
         <div class="hint">实线：自身 + 关联图谱动态模型；虚线：仅自身特征。分位越高风险越高，95 分位以上进入预警名单。下方圆点为关联主体在当月新出现的风险事件。点击月份可回放。</div>
         <div id="tlChart"></div>
@@ -170,19 +183,19 @@ footer{max-width:1320px;margin:0 auto;padding:0 16px 40px;font-size:12px;color:v
         <div class="legend" id="tlLegend"></div>
       </div>
       <div class="grid2">
-        <div class="card panel net">
+        <div class="panel net">
           <h3>多层级关联网络</h3>
-          <div class="hint" id="netHint">随月份回放：橙色为截至当月已出现风险事件的关联主体，外圈闪动表示近 3 个月新出现。</div>
+          <div class="hint" id="netHint">随月份回放：红色为截至当月已出现风险事件的关联主体，外圈闪动表示近 3 个月新出现。</div>
           <div id="netChart"></div>
         </div>
-        <div class="card panel attr">
+        <div class="panel attr">
           <h3>风险归因（当月）</h3>
           <div class="hint">动态模型的 SHAP 分解：正值推高风险，负值降低风险。</div>
           <div id="attrBars"></div>
           <ul class="drivers" id="attrList"></ul>
         </div>
       </div>
-      <div class="card story" id="pStory"></div>
+      <div class="story" id="pStory"></div>
     </div>
   </div>
 </section>
@@ -190,7 +203,7 @@ footer{max-width:1320px;margin:0 auto;padding:0 16px 40px;font-size:12px;color:v
 <!-- 预警工作台 -->
 <section class="view" id="v-alert">
   <h2 class="sec">预警工作台</h2>
-  <p class="lead">测试期内每月按动态模型评分取前 5% 列入预警名单；这里列出每家企业在一个观察年内首次进入名单的月份。名单按触发渠道分两级：近 3 个月客户或担保连带方（共同被告）被起诉、或任一关联方被强制执行、列入失信的，列为<b>优先复核</b>，其余为常规复核。“6 个月内违约”是事后结局，用于检验预警质量，业务使用时不可见。</p>
+  <p class="lead">测试期内每月按动态模型评分取前 5% 列入预警名单；这里列出每家企业在一个观察年内首次进入名单的月份。名单按触发渠道分两级：近 3 个月客户或担保连带方（共同被告）被起诉、或任一关联方被强制执行、列入失信的，列为<b>优先复核</b>，其余为常规复核。“6 个月内违约”为事后结局，用于回测预警质量。</p>
   <div class="stats" id="aStats"></div>
   <div class="filters">
     <span>复核等级</span><select id="aLvl"><option value="">全部</option><option value="1">优先复核</option><option value="2">常规复核</option></select>
@@ -206,20 +219,20 @@ footer{max-width:1320px;margin:0 auto;padding:0 16px 40px;font-size:12px;color:v
 <!-- 情景推演 -->
 <section class="view" id="v-sim">
   <h2 class="sec">情景推演</h2>
-  <p class="lead">设定客户当前的 6 个月违约概率，勾选假设发生的关联事件，查看调整后的风险与建议动作。事件乘数来自样本外估计：在自身模型评分之上，近 3 个月出现该类关联事件使未来 6 个月违约几率变为原来的若干倍。多个事件按乘数相乘，只作方向性参考。</p>
+  <p class="lead">设定客户当前的 6 个月违约概率，勾选假设发生的关联事件，查看调整后的风险与建议动作。事件乘数来自样本外估计：在自身模型评分之上，近 3 个月出现该类关联事件使未来 6 个月违约几率变为原来的若干倍。多个事件按乘数相乘。</p>
   <div class="sim">
-    <div class="card panel">
+    <div class="panel">
       <h3>1 · 基准</h3>
       <div class="hint">基准取“仅用自身特征”的模型概率，事件乘数就是在它之上估计的。可从样本企业带入，或直接设定。</div>
-      <select id="sFirm" style="width:100%;border:1px solid var(--rule);background:var(--paper);border-radius:8px;padding:6px 8px;margin:6px 0 12px"></select>
+      <select id="sFirm" style="width:100%;height:34px;border:1px solid var(--rule);background:#fff;border-radius:2px;padding:0 8px;margin:6px 0 12px"></select>
       <div class="range"><input type="range" id="sBase" min="0" max="100" value="40"><span class="mono" id="sBaseV" style="min-width:64px;text-align:right"></span></div>
       <div class="hint" style="margin-top:8px">违约概率刻度为对数；样本整体的 6 个月违约率约为 <span class="mono" id="sBaseRate"></span>。</div>
     </div>
-    <div class="card panel">
+    <div class="panel">
       <h3>2 · 假设发生的关联事件</h3>
       <div id="sEvents"></div>
     </div>
-    <div class="card panel">
+    <div class="panel">
       <h3>3 · 结果</h3>
       <div class="hint">调整后未来 6 个月违约概率</div>
       <div class="big" id="sOut">—</div>
@@ -236,14 +249,16 @@ footer{max-width:1320px;margin:0 auto;padding:0 16px 40px;font-size:12px;color:v
   <h2 class="sec">方法与证据</h2>
   <p class="lead" id="eLead"></p>
   <div class="ev3">
-    <div class="card panel"><h3>评分模型：静态年度 vs 月度动态</h3><div class="hint">滚动外推（2019—2023），相对各自基线的 AUC 增量与企业聚类 bootstrap 95% 置信区间。</div><div id="eDelta"></div></div>
-    <div class="card panel"><h3>关联事件乘数（在自身模型评分之上）</h3><div class="hint">近 3 个月出现该类事件时未来 6 个月违约几率的倍数，95% 置信区间。</div><div id="eMult"></div></div>
-    <div class="card panel"><h3>风险传导渠道（年度截面，控制自身财务）</h3><div class="hint">Logit 优势比；橙色为 95% 置信区间不含 1。</div><div id="eOR"></div></div>
-    <div class="card panel"><h3>赛题三条机制的检验</h3><div class="hint">①上游供应商提价 ②投资方其他被投项目出险 ③竞争对手突破。线性概率模型，行业×年份固定效应，单位：百分点。</div><div id="eMech"></div></div>
+    <div class="panel"><h3>评分模型：静态年度 vs 月度动态</h3><div class="hint">滚动外推（2019—2023），相对各自基线的 AUC 增量与企业聚类 bootstrap 95% 置信区间。</div><div id="eDelta"></div></div>
+    <div class="panel"><h3>关联事件乘数（在自身模型评分之上）</h3><div class="hint">近 3 个月出现该类事件时未来 6 个月违约几率的倍数，95% 置信区间。</div><div id="eMult"></div></div>
+    <div class="panel"><h3>风险传导渠道（年度截面，控制自身财务）</h3><div class="hint">Logit 优势比；蓝色为 95% 置信区间不含 1。</div><div id="eOR"></div></div>
+    <div class="panel"><h3>赛题三条机制的检验</h3><div class="hint">①上游供应商提价 ②投资方其他被投项目出险 ③竞争对手突破。线性概率模型，行业×年份固定效应，单位：百分点。</div><div id="eMech"></div></div>
   </div>
 </section>
 </div>
 <footer id="foot"></footer>
+</div>
+</div>
 <div class="tip" id="tip"></div>
 
 <script>
@@ -263,13 +278,10 @@ const band = p => p >= .95 ? ['b3', '预警'] : p >= .85 ? ['b2', '关注'] : p 
 
 /* ---------- 主题与标签页 ---------- */
 (function(){
-  const root = document.documentElement; let s = null; try { s = localStorage.getItem('theme') } catch(e){}
-  if (s) root.setAttribute('data-theme', s);
-  $('#themeBtn').onclick = () => { const dark = root.getAttribute('data-theme') === 'dark' || (!root.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
-    const n = dark ? 'light' : 'dark'; root.setAttribute('data-theme', n); try { localStorage.setItem('theme', n) } catch(e){} redraw(); };
   $$('.tabs button').forEach(b => b.onclick = () => go(b.dataset.v));
 })();
-function go(v){ $$('.tabs button').forEach(x => x.classList.toggle('on', x.dataset.v === v)); $$('.view').forEach(x => x.classList.toggle('on', x.id === 'v-' + v)); if (v === 'evid') drawEvidence(); scrollTo({top: 0}); }
+const VN = {pano: '全景视图', alert: '预警工作台', sim: '情景推演', evid: '方法与证据'};
+function go(v){ $('#crumb').textContent = VN[v]; $$('.tabs button').forEach(x => x.classList.toggle('on', x.dataset.v === v)); $$('.view').forEach(x => x.classList.toggle('on', x.id === 'v-' + v)); if (v === 'evid') drawEvidence(); scrollTo({top: 0}); }
 
 /* ---------- 全景视图 ---------- */
 let cur = null, month = 11, flt = 'all';
@@ -287,7 +299,7 @@ function buildList(){
     d.innerHTML = `<div class="nm">${f.id}<span class="tag ${tag[0]}">${tag[1]}</span></div><div class="sub">${f.industry} · ${f.period}</div>`;
     const sv = el('svg', {viewBox: '0 0 64 30', width: 64, height: 30}); d.appendChild(sv);
     const pts = f.months.map((m, i) => `${2 + i * 60 / 11},${28 - m.p4 * 26}`).join(' ') + (f.months.length === 1 ? ` 4,${28 - f.months[0].p4 * 26}` : '');
-    el('polyline', {points: pts, fill: 'none', stroke: css('--accent'), 'stroke-width': 1.6}, sv);
+    el('polyline', {points: pts, fill: 'none', stroke: css('--brand'), 'stroke-width': 1.6}, sv);
     el('line', {x1: 2, x2: 62, y1: 28 - .95 * 26, y2: 28 - .95 * 26, stroke: css('--rule'), 'stroke-dasharray': '2 2'}, sv);
     d.onclick = () => openFirm(f.id); box.appendChild(d);
   });
@@ -319,8 +331,8 @@ function drawTimeline(){
   el('rect', {x: L, y: y(1), width: W - L - R, height: y(.95) - y(1), fill: css('--accent-soft'), opacity: .7}, svg);
   [0, .25, .5, .75, .95].forEach(v => { el('line', {x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: css('--rule-2')}, svg); txt(svg, L - 8, y(v) + 4, (v * 100).toFixed(0), {'text-anchor': 'end', 'font-size': 11, fill: css('--muted')}); });
   const line = (k, color, dash) => el('polyline', {points: f.months.map((m, i) => `${x(i)},${y(m[k])}`).join(' ') + (nm === 1 ? ` ${x(0) + 1},${y(f.months[0][k])}` : ''), fill: 'none', stroke: color, 'stroke-width': 2.4, 'stroke-dasharray': dash || '', 'stroke-linejoin': 'round'}, svg);
-  line('p1', css('--muted'), '5 4'); line('p4', css('--accent'));
-  f.months.forEach((m, i) => { el('circle', {cx: x(i), cy: y(m.p4), r: i === month ? 5.5 : 3, fill: css('--accent')}, svg); });
+  line('p1', css('--muted'), '5 4'); line('p4', css('--brand'));
+  f.months.forEach((m, i) => { el('circle', {cx: x(i), cy: y(m.p4), r: i === month ? 5.5 : 3, fill: css('--brand')}, svg); });
   el('line', {x1: x(month), x2: x(month), y1: T, y2: H - 18, stroke: css('--ink'), 'stroke-width': 1, 'stroke-dasharray': '3 3'}, svg);
   // 事件泳道
   const lanes = ['股权', '担保连带', '交易', '兄弟企业', '二跳'], ly0 = H - B + 26;
@@ -391,7 +403,7 @@ function initAlerts(){
   const s = D.alert_stats;
   $('#aStats').innerHTML = [[s.n.toLocaleString(), '首次预警（企业-观察年）'], [pp(s.hit), `6 个月内违约比例（全样本 ${pp(s.base)}）`],
     [s.lift.toFixed(1) + '×', '首次预警命中率 / 全样本基准'], [pp(s.capture), '违约事件被提前预警的比例'],
-    [`<span style="color:var(--accent)">${pp(s.hit1)}</span>`, `优先复核命中率（${s.n1} 条；常规复核 ${pp(s.hit2)}）`]].map(([v, l]) => `<div class="card stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    [`<span style="color:var(--accent)">${pp(s.hit1)}</span>`, `优先复核命中率（${s.n1} 条；常规复核 ${pp(s.hit2)}）`]].map(([v, l]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
   drawAlerts();
 }
 function drawAlerts(){
@@ -413,7 +425,7 @@ function initSim(){
   $('#sBaseRate').textContent = pp(D.base_rate6);
   $('#sFirm').innerHTML = '<option value="">自定义基准</option>' + D.firms.map(f => `<option value="${f.id}">${f.id} · ${f.industry}（仅自身模型 ${pp(f.months[Math.min(f.focus_month ?? 11, f.months.length - 1)].pd1)}）</option>`).join('');
   $('#sFirm').onchange = e => { const f = D.firms.find(x => x.id === e.target.value); if (f) $('#sBase').value = ilg(Math.max(.001, f.months[Math.min(f.focus_month ?? 11, f.months.length - 1)].pd1)); calc(); };
-  $('#sEvents').innerHTML = D.multipliers.map((m, i) => `<label class="ev"><input type="checkbox" data-i="${i}"><div><b>${m.name}</b><span>乘数 <span class="m">${m.mult.toFixed(2)}×</span>（95% CI ${m.lo.toFixed(2)}—${m.hi.toFixed(2)}）${m.lo <= 1 ? ' · 区间含 1' : ''}</span></div></label>`).join('');
+  $('#sEvents').innerHTML = D.multipliers.map((m, i) => `<label class="ev"><input type="checkbox" data-i="${i}"><div><b>${m.name}</b><span>乘数 <span class="m">${m.mult.toFixed(2)}×</span>（95% CI ${m.lo.toFixed(2)}—${m.hi.toFixed(2)}）${m.lo <= 1 ? ' · 不显著' : ''}</span></div></label>`).join('');
   $$('#sEvents input').forEach(c => c.onchange = calc); $('#sBase').oninput = calc; calc();
 }
 function calc(){
@@ -434,11 +446,11 @@ function forest(box, rows, opt){
   const lo = opt.lo, hi = opt.hi, log = opt.log, f = v => log ? Math.log(v) : v;
   const x = v => L + (f(Math.min(Math.max(v, lo), hi)) - f(lo)) / (f(hi) - f(lo)) * (W - L - R);
   opt.ticks.forEach(t => { el('line', {x1: x(t), x2: x(t), y1: T - 4, y2: H - 22, stroke: t === opt.ref ? css('--muted') : css('--rule-2'), 'stroke-dasharray': t === opt.ref ? '4 3' : ''}, svg); txt(svg, x(t), H - 8, opt.fmt(t), {'text-anchor': 'middle', 'font-size': 11}); });
-  rows.forEach((r, i) => { const y = T + i * rh + rh / 2, sig = opt.sig(r), c = sig ? css('--accent') : css('--muted');
+  rows.forEach((r, i) => { const y = T + i * rh + rh / 2, sig = opt.sig(r), c = sig ? css('--brand') : css('--muted');
     txt(svg, L - 10, y + 4, r.name, {'text-anchor': 'end', 'font-size': 12});
     el('line', {x1: x(r.lo), x2: x(r.hi), y1: y, y2: y, stroke: c, 'stroke-width': 2.4, 'stroke-linecap': 'round'}, svg);
     el('circle', {cx: x(r.v), cy: y, r: 4.5, fill: c}, svg);
-    const t = txt(svg, W - R + 8, y + 4, opt.fmtv(r.v), {'font-size': 11.5, 'font-family': 'IBM Plex Mono'}); t.style.fill = sig ? css('--accent') : css('--ink-2'); });
+    const t = txt(svg, W - R + 8, y + 4, opt.fmtv(r.v), {'font-size': 11.5, 'font-weight': 700}); t.style.fill = sig ? css('--brand') : css('--ink-2'); });
 }
 function drawEvidence(){
   $('#eLead').innerHTML = D.evidence.lead;
@@ -448,11 +460,11 @@ function drawEvidence(){
   forest($('#eMech'), D.evidence.mech, {lo: -3, hi: 4, ticks: [-2, 0, 2, 4], ref: 0, fmt: t => (t > 0 ? '+' : '') + t, fmtv: v => (v > 0 ? '+' : '') + v.toFixed(2), sig: r => r.lo > 0 || r.hi < 0, L: 230});
 }
 function redraw(){ if (cur) drawFirm(); if ($('#v-evid').classList.contains('on')) drawEvidence(); buildList(); }
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
 $('#foot').innerHTML = D.footer;
 initAlerts(); initSim();
 openFirm(D.firms[0].id);
 const q = new URLSearchParams(location.search); if (['pano', 'alert', 'sim', 'evid'].includes(q.get('v'))) go(q.get('v'));
 </script>
+<script src="assets/assistant.js" defer></script>
 </body>
 </html>

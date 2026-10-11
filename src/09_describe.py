@@ -6,11 +6,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from common import *
 
-plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei"]
-plt.rcParams["axes.unicode_minus"] = False
+from style import *
+
+apply()
 FIG = OUT / "fig"
 FIG.mkdir(exist_ok=True)
-INK, MUTED, ACC, ACC2, GRID = "#1f2933", "#7b8794", "#c2410c", "#2563eb", "#e4e7eb"
 
 P = pd.read_parquet(WORK / "panel.parquet")
 E = pd.read_parquet(WORK / "edges.parquet")
@@ -57,29 +57,16 @@ cmp["正常组均值"] = P[P.y == 0][list(cmp_cols)].mean().values
 cmp.to_csv(OUT / "desc_compare.csv", encoding="utf-8-sig")
 print(cmp.round(4).to_string())
 
-# 图 1：年度违约率 + 样本数
-fig, ax = plt.subplots(figsize=(6.4, 3.0), dpi=200)
-ax.bar(yr.t, yr.样本, color=GRID, width=0.62, label="样本企业数")
-ax.set_ylabel("样本企业数", color=MUTED, fontsize=8)
-ax.tick_params(axis="both", labelsize=8, colors=MUTED)
-ax2 = ax.twinx()
-ax2.plot(yr.t, yr.违约率 * 100, color=ACC, marker="o", lw=1.8, ms=4, label="首次违约率")
+# 图 1：年度首次违约率（样本规模写在横轴标签里，不用双轴）
+fig, ax = plt.subplots(figsize=(6.4, 2.7), dpi=200)
+ax.bar(yr.t, yr.违约率 * 100, color=BRAND, width=0.58, zorder=2)
 for x_, y_ in zip(yr.t, yr.违约率 * 100):
-    ax2.annotate(f"{y_:.2f}%", (x_, y_), textcoords="offset points", xytext=(0, 6), ha="center", fontsize=7, color=ACC)
-ax2.set_ylabel("首次违约率 (%)", color=ACC, fontsize=8)
-ax2.tick_params(axis="y", labelsize=8, colors=ACC)
-ax2.set_ylim(0, yr.违约率.max() * 100 * 1.35)
-for a in (ax, ax2):
-    for s in ["top"]:
-        a.spines[s].set_visible(False)
+    ax.text(x_, y_ + 0.06, f"{y_:.2f}%", ha="center", fontsize=7.2, color=INK)
+ax.set_ylim(0, yr.违约率.max() * 100 * 1.22)
 ax.set_xticks(yr.t)
-ax.set_xticklabels([f"{t}\n({t+1}.4)" for t in yr.t], fontsize=7)
-ax.set_xlabel("观察年 t（括号内为决策时点）", fontsize=8, color=MUTED)
-ax.axvspan(2020.5, 2021.5, color="#fde68a", alpha=0.35, lw=0)
-ax.axvspan(2021.5, 2023.5, color="#bfdbfe", alpha=0.35, lw=0)
-ax.text(2018, ax.get_ylim()[1] * 0.93, "训练", ha="center", fontsize=8, color=MUTED)
-ax.text(2021, ax.get_ylim()[1] * 0.93, "验证", ha="center", fontsize=8, color=MUTED)
-ax.text(2022.5, ax.get_ylim()[1] * 0.93, "测试(外推)", ha="center", fontsize=8, color=MUTED)
+ax.set_xticklabels([f"{t}\n{int(n):,} 家" for t, n in zip(yr.t, yr.样本)], fontsize=7)
+ax.set_ylabel("未来 12 个月首次违约率（%）", fontsize=7.5)
+clean(ax, "y")
 fig.tight_layout()
 fig.savefig(FIG / "fig1_year.png")
 
@@ -87,19 +74,17 @@ fig.savefig(FIG / "fig1_year.png")
 rel_s = rel.sort_values("提升倍数")
 fig, ax = plt.subplots(figsize=(6.4, 3.3), dpi=200)
 yy = np.arange(len(rel_s))
-ax.barh(yy + 0.19, rel_s.有风险邻居违约率 * 100, height=0.36, color=ACC, label="存在有风险事件的该类邻居")
-ax.barh(yy - 0.19, rel_s.无风险邻居违约率 * 100, height=0.36, color="#cbd2d9", label="不存在")
+ax.barh(yy + 0.19, rel_s.有风险邻居违约率 * 100, height=0.36, color=BRAND, label="存在出险的该类关联方", zorder=2)
+ax.barh(yy - 0.19, rel_s.无风险邻居违约率 * 100, height=0.36, color=COMPARE, label="不存在", zorder=2)
 for i, r_ in enumerate(rel_s.itertuples()):
     ax.text(r_.有风险邻居违约率 * 100 + 0.1, i + 0.19, f"×{r_.提升倍数:.1f}", va="center", fontsize=7, color=INK)
 ax.set_yticks(yy)
 ax.set_yticklabels([f"{a}（覆盖{b:.0%}）" for a, b in zip(rel_s.关系, rel_s.有风险邻居占比)], fontsize=7.5)
-ax.set_xlabel("未来12个月首次违约率 (%)", fontsize=8, color=MUTED)
-ax.tick_params(axis="x", labelsize=8, colors=MUTED)
+ax.set_xlabel("未来 12 个月首次违约率（%）", fontsize=7.5)
 ax.axvline(base * 100, color=MUTED, lw=0.8, ls="--")
 ax.text(base * 100, len(rel_s) - 0.3, f" 全样本 {base:.2%}", fontsize=7, color=MUTED)
-ax.legend(fontsize=7, frameon=False, loc="lower right")
-for s in ["top", "right"]:
-    ax.spines[s].set_visible(False)
+ax.legend(fontsize=7, loc="lower right")
+clean(ax, "x")
 fig.tight_layout()
 fig.savefig(FIG / "fig2_relation_lift.png")
 print("figs saved")

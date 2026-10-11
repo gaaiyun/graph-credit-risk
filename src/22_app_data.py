@@ -290,7 +290,7 @@ for (code, t), row in sel.iterrows():
         e0 = ev_before[0]
         parts.append(f"最早的关联信号是 <b>{e0['who']}</b>（{e0['rel']}）于 {e0['ym']} {e0['kind']}")
     parts.append(f"结局：{outcome}")
-    grp_txt = {"def": "被提前预警的违约企业", "miss": "漏检的违约企业：模型没有提前识别，列出来是为了如实展示局限", "fp": "预警后未违约（误报）", "ok": "正常企业"}[row.group]
+    grp_txt = {"def": "被提前预警的违约企业", "miss": "漏检的违约企业：模型未提前识别", "fp": "预警后未违约（误报）", "ok": "正常企业"}[row.group]
     story = f"<b>{grp_txt}。</b>" + "；".join(parts) + "。"
     axis = [f"{(s0 + i) // 12}-{(s0 + i) % 12 + 1:02d}" for i in range(12)]
     firms.append({"id": firm_id[(code, t)], "industry": ind, "period": period, "axis": axis, "group": row.group, "outcome": outcome, "months": months,
@@ -351,9 +351,8 @@ SHORT = {"毛利率挤压(1SD)": "①毛利率挤压(1SD)", "供应商集中度�
          "同业高速增长者占比(1SD)": "③同业高速增长者占比(1SD)", "本企业增速落后同业": "③本企业增速落后同业", "高速增长者占比×落后": "③高速增长者占比×落后"}
 mechs = [{"name": SHORT.get(r.变量, r.变量), "v": float(r["系数(百分点)"]), "lo": float(r.CI_lo), "hi": float(r.CI_hi)} for _, r in mech.iterrows()]
 lead = ("数据：A 股非金融上市公司 2016—2023 年逐年关联图谱（10 类关系）与月度关联事件时序；标签：首次以被告身份被提起金融债务诉讼。"
-        "所有评估均为时间外推（用过去训练、预测未来）。完整方法与稳健性见<a href=\"./\">分析报告</a>。")
-footer = ("原型数据来自中国研究数据服务平台（CNRDS）与国泰安（CSMAR）数据库的衍生结果，企业编号与关联主体均已脱敏，风险分位只用于方法演示，不构成对任何企业的信用评价。"
-          "原始数据受许可限制未公开。")
+        "全部评估采用逐年滚动外推：用过去训练，预测未来。方法与稳健性检验见<a href=\"./\">研究报告</a>。")
+footer = "数据：中国研究数据服务平台（CNRDS）与国泰安（CSMAR）数据库衍生结果；企业编号与关联主体已脱敏。"
 data = {"firms": firms, "alerts": alerts, "alert_stats": alert_stats, "multipliers": mults, "base_rate6": float(R.y6.mean()),
         "evidence": {"lead": lead, "deltas": deltas, "or": ors, "mech": mechs}, "footer": footer}
 tpl = (Path(__file__).with_name("app_template.html")).read_text(encoding="utf-8")

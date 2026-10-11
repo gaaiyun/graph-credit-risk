@@ -10,3 +10,5 @@ __pycache__/
 *.pyc
 .playwright-mcp/
 tools/layout/node_modules/
+assistant/worker/node_modules/
+assistant/worker/.wrangler/

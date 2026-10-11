@@ -8,8 +8,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from common import *
 
-plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei"]
-plt.rcParams["axes.unicode_minus"] = False
+from style import *
+
+apply()
 FIG = OUT / "fig"
 REL_CN = {"sup": "供应商", "cus": "客户", "holder": "股东", "invest": "对外投资", "ctrl": "同一控制", "person": "同一关键人员",
           "affil": "联营/合营", "rp_other": "其他关联方", "codef": "共同被告", "debtor": "债务人", "creditor": "债权人"}
@@ -117,9 +118,9 @@ def draw(case, path, public=False):
     pos = {n["id"]: (n["x"], n["y"]) for n in case["nodes"]}
     for e in case["edges"]:
         (x0, y0), (x1, y1) = pos[e["s"]], pos[e["t"]]
-        ax.plot([x0, x1], [y0, y1], color="#cbd2d9", lw=0.9, zorder=1)
+        ax.plot([x0, x1], [y0, y1], color=COMPARE, lw=0.9, zorder=1)
         f = 0.5
-        ax.text(x0 + (x1 - x0) * f, y0 + (y1 - y0) * f, REL_CN.get(e["rel"], e["rel"]), fontsize=5.6, color="#52606d", ha="center",
+        ax.text(x0 + (x1 - x0) * f, y0 + (y1 - y0) * f, REL_CN.get(e["rel"], e["rel"]), fontsize=5.6, color=INK2, ha="center",
                 va="center", bbox=dict(boxstyle="round,pad=0.1", fc="white", ec="none", alpha=0.9), zorder=2)
     cnt = {}
     for n in case["nodes"]:
@@ -127,24 +128,24 @@ def draw(case, path, public=False):
         cnt[k] = cnt.get(k, 0) + 1
         n["_lab"] = ("案例企业" if (public and n["ring"] == 0) else label(n["id"], public, cnt[k]))
         x, y = pos[n["id"]]
-        colr = "#1f2933" if n["ring"] == 0 else ("#c2410c" if n["risk"] > 0 else "#9aa5b1")
+        colr = NAVY if n["ring"] == 0 else (WARN if n["risk"] > 0 else "#A9B4C4")
         size = 150 if n["ring"] == 0 else (45 + 30 * min(n["risk"], 3))
         mk = "s" if n["id"].startswith("C:") else "o"
         ax.scatter([x], [y], s=size, color=colr, marker=mk, zorder=3, edgecolor="white", lw=0.8)
         txt = n["_lab"] if len(n["_lab"]) <= 14 else n["_lab"][:13] + "…"
         if n["ring"] == 0:
-            ax.text(x, y - 0.16, txt, fontsize=7, ha="center", va="top", color="#1f2933", zorder=4, fontweight="bold")
+            ax.text(x, y - 0.16, txt, fontsize=7, ha="center", va="top", color=INK, zorder=4, fontweight="bold")
         else:
             a = np.arctan2(y, x)
             ax.text(x + 0.1 * np.cos(a), y + 0.1 * np.sin(a), txt, fontsize=6, ha="left" if np.cos(a) >= 0 else "right",
-                    va="center", color="#1f2933", zorder=4)
+                    va="center", color=INK, zorder=4)
     xs = [p[0] for p in pos.values()]; ys = [p[1] for p in pos.values()]
     ax.set_xlim(min(xs) - 1.3, max(xs) + 1.3)
     ax.set_ylim(min(ys) - 0.35, max(ys) + 0.3)
     ax.set_aspect("equal")
     ax.axis("off")
     ttl = f"{'案例企业' if public else label('C:' + case['code'])}｜决策日 {case['decision']}｜首次被诉 {case['event']['date']}（{case['event']['case']}）"
-    ax.set_title(ttl, fontsize=7.5, color="#1f2933")
+    ax.set_title(ttl, fontsize=7.5, color=INK)
     fig.savefig(path, bbox_inches="tight", pad_inches=0.05)
     plt.close(fig)
 

@@ -8,12 +8,22 @@ from pathlib import Path
 import pandas as pd
 import docx_helpers as dh
 
+PDF_URL = "https://github.com/gaaiyun/graph-credit-risk/releases/download/v1.0/graph-credit-risk-report.pdf"
+
 
 def _md_inline(text):
     """**加粗** → <b>，[文字](链接) → <a>；其余转义"""
     t = html.escape(text)
     t = re.sub(r"\[(.+?)\]\((.+?)\)", r'<a href="\2">\1</a>', t)
     return re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
+
+
+_NUM = re.compile(r"^[-+−]?[\d,.]+\s*(%|‰|×|倍|万|家)?(\s*[\[（(].*[\]）)])?$|^—$")
+
+
+def _num(v):
+    """数字单元格右对齐，文字单元格左对齐。"""
+    return ' class="r"' if _NUM.match(str(v).strip()) else ""
 
 
 def _plain(text):
@@ -80,7 +90,7 @@ def para_with_bold(doc, text, size=10.5):
     return p
 
 
-def to_html(blocks, template_path, out_dir, lede, kpis, footer, data, date):
+def to_html(blocks, template_path, out_dir, lede, kpis, footer, data, date, extra=None):
     out_dir = Path(out_dir)
     assets = out_dir / "assets"
     assets.mkdir(parents=True, exist_ok=True)
@@ -101,7 +111,7 @@ def to_html(blocks, template_path, out_dir, lede, kpis, footer, data, date):
         elif k == "formula":
             parts.append(f'<p style="text-align:center;font-family:var(--mono);font-size:14px">{html.escape(b[1])}</p>')
         elif k == "callout":
-            parts.append(f'<div class="callout"><div class="t">{html.escape(b[1])}</div>{_md_inline(b[2])}</div>')
+            parts.append(f'<div class="callout"><div class="t">{html.escape(b[1])}</div><div>{_md_inline(b[2])}</div></div>')
         elif k == "fig":
             fig_n += 1
             src = Path(b[1])
@@ -122,21 +132,23 @@ def to_html(blocks, template_path, out_dir, lede, kpis, footer, data, date):
             df, cap = b[1], b[2]
             note = b[3] if len(b) > 3 and b[3] else ""
             hl = set(b[4]) if len(b) > 4 and b[4] else set()
-            th = "".join(f"<th>{html.escape(str(c))}</th>" for c in df.columns)
+            numcol = [all(_num(v) for v in df[c]) for c in df.columns]
+            th = "".join(f'<th{" class=\"r\"" if nc else ""}>{html.escape(str(c))}</th>' for c, nc in zip(df.columns, numcol))
             rows = []
             for i, r in enumerate(df.itertuples(index=False)):
                 cls = ' class="hl"' if i in hl else ""
-                rows.append(f"<tr{cls}>" + "".join(f"<td>{html.escape(str(v))}</td>" for v in r) + "</tr>")
+                rows.append(f"<tr{cls}>" + "".join(f"<td{_num(v)}>{html.escape(str(v))}</td>" for v in r) + "</tr>")
             if cap.startswith("附表"):
                 tab_n -= 1
             cap_txt = html.escape(cap) if cap.startswith("附表") else f"表{tab_n}　{html.escape(cap)}"
             parts.append(f'<div class="tcap">{cap_txt}</div><div class="tbl"><table><thead><tr>{th}</tr></thead>'
                          f'<tbody>{"".join(rows)}</tbody></table></div>' + (f'<p class="note">{html.escape(note)}</p>' if note else ""))
     tpl = Path(template_path).read_text(encoding="utf-8")
-    kp = "".join(f'<div class="kpi reveal" style="animation-delay:{0.3 + i * 0.07:.2f}s"><div class="v">{v}</div><div class="l">{html.escape(l)}</div></div>'
-                 for i, (v, l) in enumerate(kpis))
+    kp = "".join(f'<div class="kpi"><div class="v">{v}</div><div class="l">{html.escape(l)}</div></div>' for v, l in kpis)
     out = (tpl.replace("{{CONTENT}}", "\n".join(parts)).replace("{{TOC}}", "\n".join(toc)).replace("{{LEDE}}", _md_inline(lede))
               .replace("{{KPIS}}", kp).replace("{{FOOTER}}", footer).replace("{{DATE}}", date)
-              .replace("{{DATA_JSON}}", json.dumps(data, ensure_ascii=False)))
+              .replace("{{PDF_URL}}", PDF_URL).replace("{{DATA_JSON}}", json.dumps(data, ensure_ascii=False)))
+    for k, v in (extra or {}).items():
+        out = out.replace("{{" + k + "}}", v)
     (out_dir / "index.html").write_text(out, encoding="utf-8")
     return out_dir / "index.html"

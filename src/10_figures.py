@@ -8,11 +8,12 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker
 from common import *
 
-plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei"]
-plt.rcParams["axes.unicode_minus"] = False
+from style import *
+
+apply()
 FIG = OUT / "fig"
 FIG.mkdir(exist_ok=True)
-INK, MUTED, ACC, ACC2, GRID, POS = "#1f2933", "#7b8794", "#c2410c", "#2563eb", "#e4e7eb", "#15803d"
+ACC, ACC2 = BRAND, TEAL          # 显著为正用品牌蓝，显著为负用青色，不显著用灰
 
 FEAT_CN = dict(FEAT_CN)
 REL_CN = {"sup": "供应商", "cus": "客户", "holder": "股东", "invest": "对外投资", "ctrl": "同一控制", "person": "同一关键人员",
@@ -31,12 +32,6 @@ def feat_cn(c):
                     sm = {"n": "数量", "fin": "金融违约", "trade": "欠款被诉", "risky": "风险邻居数", "dist": "财务困境", "": ""}
                     return f"{lab}·{v}{sm.get(suf, suf)}"
     return c
-
-
-def clean(ax):
-    for s in ["top", "right"]:
-        ax.spines[s].set_visible(False)
-    ax.tick_params(labelsize=7.5, colors=MUTED)
 
 
 # ---------------------------------------------------------------- 图3 两种评分口径的增量（滚动外推 2019-2023）
@@ -127,12 +122,12 @@ ax = axes[1]
 top = imp.head(18)[::-1]
 graph_like = lambda c: c.startswith(("nb_", "hop", "ppr", "group_", "deg", "pagerank", "kcore"))
 comp_like = lambda c: c.startswith(("peer_", "rel_"))
-cc = [ACC if graph_like(c) else (ACC2 if comp_like(c) else "#9aa5b1") for c in top.index]
+cc = [ACC if graph_like(c) else (ACC2 if comp_like(c) else COMPARE) for c in top.index]
 ax.barh(np.arange(len(top)), top.values, color=cc, height=0.65)
 ax.set_yticks(np.arange(len(top)))
 ax.set_yticklabels([feat_cn(c) for c in top.index], fontsize=7)
 ax.set_xlabel("平均|SHAP|（测试集，M5 全特征模型）", fontsize=7.5, color=MUTED)
-ax.set_title("前 18 个特征（橙=图谱，蓝=同业，灰=自身）", fontsize=8.5, color=INK, loc="left")
+ax.set_title("前 18 个特征（蓝=图谱，青=同业，灰=自身）", fontsize=8.5, color=INK, loc="left")
 clean(ax)
 fig.tight_layout()
 fig.savefig(FIG / "fig5_shap.png")
@@ -162,11 +157,11 @@ def km(dur, ev):
     return np.array(out)
 
 
-ax.plot(grid, km(trg.dur, trg.post_def) * 100, color=ACC, lw=1.8, label=f"关联方新出现债务诉讼后（n={len(trg)}）")
+ax.plot(grid, km(trg.dur, trg.post_def) * 100, color=BRAND, lw=2, label=f"关联方新出现债务诉讼后（n={len(trg)}）")
 ax.plot(grid, km(un.dur, un.ev) * 100, color=MUTED, lw=1.6, ls="--", label=f"未触发期间（n={len(un)}）")
 ax.set_xlabel("自触发（或决策日）起的月数", fontsize=7.5, color=MUTED)
 ax.set_ylabel("累计首次违约率（%）", fontsize=7.5, color=MUTED)
-ax.legend(fontsize=6.8, frameon=False, loc="upper left")
+ax.legend(fontsize=6.8, loc="upper left")
 ax.set_title("触发后累计违约（Kaplan-Meier）", fontsize=8.5, color=INK, loc="left")
 clean(ax)
 ax = axes[1]
